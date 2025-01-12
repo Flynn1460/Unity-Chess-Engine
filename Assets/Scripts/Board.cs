@@ -2,9 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class Board
 {
@@ -12,6 +10,8 @@ public class Board
     private BoardHighlighter boardHighlighter = new BoardHighlighter();
 
     private Sprite queen_texture = Resources.Load<Sprite>("Chess/wq");
+
+    private bool IS_TURN_RESTRICTIVE = false;
 
     public bool TURN = true;
     public int[,] BOARD = new int[8,8] {
@@ -21,8 +21,8 @@ public class Board
             { 0,  0,  0,  0,  0,  0,  0, 0 },
             { 0,  0,  0,  0,  0,  0,  0, 0 },
             { 0,  0,  0,  0,  0,  0,  0, 0 },
-            { 7,  7,  7,  7,  7,  7,  7, 7 },
-            { 8,  9, 10, 11, 12, 10,  9, 8 }
+            { 8,  8,  8,  8,  8,  8,  8, 8 },
+            { 9, 10, 11, 12, 13, 12, 10, 9 }
     };
 
     private int[,] EMPTY_BOARD = new int[8,8] {
@@ -39,15 +39,13 @@ public class Board
 
     private MoveGenerator moveGenerator = new MoveGenerator();
     
-    public Board(string FEN="8/8/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {
-        set_fen(FEN);
+    public Board(string FEN="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1") {
+        //set_fen(FEN);
     }
 
     private void set_fen(string FEN) {
         int f = 0; //Files
         int r = 7; //Ranks
-        bool turn = false;
-
         BOARD = EMPTY_BOARD;
 
         foreach(char i in FEN) {
@@ -62,8 +60,8 @@ public class Board
             
             else if (i == ' ') {
                 char turn_char = FEN[i+1];
-                if (turn_char == 'w') turn = true;
-                if (turn_char == 'b') turn = false;
+                if (turn_char == 'w') TURN = true;
+                if (turn_char == 'b') TURN = false;
                 break;
             }
 
@@ -78,12 +76,12 @@ public class Board
                     case 'K': BOARD[r, f] = 6; break;
 
                     // Black
-                    case 'p': BOARD[r, f] = 7; break;
-                    case 'r': BOARD[r, f] = 8; break;
-                    case 'n': BOARD[r, f] = 9; break;
-                    case 'b': BOARD[r, f] = 10; break;
-                    case 'q': BOARD[r, f] = 11; break;
-                    case 'k': BOARD[r, f] = 12; break;
+                    case 'p': BOARD[r, f] = 8; break;
+                    case 'r': BOARD[r, f] = 9; break;
+                    case 'n': BOARD[r, f] = 10; break;
+                    case 'b': BOARD[r, f] = 11; break;
+                    case 'q': BOARD[r, f] = 12; break;
+                    case 'k': BOARD[r, f] = 13; break;
                 }
                 f += 1;
             }
@@ -119,8 +117,13 @@ public class Board
         return pBoard;
     }
 
+
     public List<String> GetLegalMoves() {
         return moveGenerator.GenerateLegalMoves(BOARD, TURN);
+    }
+
+    public List<String> GetPieceLegalMoves(List<int> SQUARE) {
+        return moveGenerator.GenerateLegalMoves_ForPiece(BOARD, TURN, SQUARE);
     }
 
 
@@ -128,70 +131,38 @@ public class Board
         List<String> piece_legal_moves = moveGenerator.GenerateLegalMoves_ForPiece(BOARD, TURN, tools.uci_converter(piecePosition));
         List<String> stripped_moves = tools.strip_moves(piece_legal_moves, false, include_promotion:false); // Get list of moves, ignore promotion data
 
-        Debug.Log(String.Join(", ", piece_legal_moves));
         boardHighlighter.Highlight_Tiles(stripped_moves);
     }
 
-    public bool DroppedPiece(string old_piece_position, string new_piece_position) {
-        List<String> piece_legal_moves = moveGenerator.GenerateLegalMoves_ForPiece(BOARD, TURN, tools.uci_converter(old_piece_position));
-        List<String> stripped_moves = tools.strip_moves(piece_legal_moves, false);
+    
+    public void Push(List<int> old_position, List<int> new_position, int pawn_promote_piece=-1, bool is_enpas=false){
+        // If replace piece is set to something make piece otherwise use what was at the position
+        int piece = pawn_promote_piece==-1 ? BOARD[old_position[0], old_position[1]] : pawn_promote_piece;
 
+        BOARD[old_position[0], old_position[1]] = 0;
+        BOARD[new_position[0], new_position[1]] = piece;
+
+        // If move is pushed then highlighting isn't needed
         boardHighlighter.Reset_Tiles();
+        TURN = !TURN;
 
-        List<int> old_position = tools.uci_converter(old_piece_position);
-        List<int> new_position = tools.uci_converter(new_piece_position);
+        // KING CASTLING
+        if (piece == 6 || piece == 12) {
+            String move = tools.uci_converter(new List<int>() {old_position[0], old_position[1], new_position[0], new_position[1]});
+            if (move == "e1c1") {
+                BOARD[0, 0] = 0; //
+                BOARD[0, 3] = 2; // PLACE ROOK
 
+                PIECE_CONTROLLER pc = GameObject.Find("a1").GetComponent<PIECE_CONTROLLER>();
+                pc.ExternalMove(new List<int>() {0, 3});
+            }   
+            if (move == "e1g1") {
+                BOARD[0, 7] = 0; //
+                BOARD[0, 5] = 2; // PLACE ROOK
 
-        if (stripped_moves.Contains(new_piece_position)) {
-            //TURN = !TURN;
-            int piece = BOARD[old_position[0], old_position[1]];
-
-            BOARD[new_position[0], new_position[1]] = piece;
-            BOARD[old_position[0], old_position[1]] = 0;
-
-            // KING CASTLING
-            if (piece == 6 || piece == 12) {
-                String move = tools.uci_converter(new List<int>() {old_position[0], old_position[1], new_position[0], new_position[1]});
-                if (move == "e1c1") {
-                    BOARD[0, 0] = 0; //
-                    BOARD[0, 3] = 2; // PLACE ROOK
-
-                    PIECE_CONTROLLER pc = GameObject.Find("a1").GetComponent<PIECE_CONTROLLER>();
-                    pc.ExternalMove(new List<int>() {0, 3});
-                }   
-                if (move == "e1g1") {
-                    BOARD[0, 7] = 0; //
-                    BOARD[0, 5] = 2; // PLACE ROOK
-
-                    PIECE_CONTROLLER pc = GameObject.Find("h1").GetComponent<PIECE_CONTROLLER>();
-                    pc.ExternalMove(new List<int>() {0, 5});
-                }
+                PIECE_CONTROLLER pc = GameObject.Find("h1").GetComponent<PIECE_CONTROLLER>();
+                pc.ExternalMove(new List<int>() {0, 5});
             }
-
-            return true;
         }
-        else if (stripped_moves.Contains(new_piece_position + "=Q")) {
-            new_piece_position += "=Q";
-
-            if(new_piece_position.Substring(2,2) == "=Q") {
-                BOARD[new_position[0], new_position[1]] = 5; // QUEEN
-                BOARD[old_position[0], old_position[1]] = 0;
-
-                // CHANGE TEXTURE
-                GameObject piece_obj = GameObject.Find(old_piece_position);
-                piece_obj.GetComponent<SpriteRenderer>().sprite = queen_texture;
-            }
-
-            if(new_piece_position.Substring(2,2) == "=N") Debug.Log("Knight");
-            if(new_piece_position.Substring(2,2) == "=R") Debug.Log("Rook");
-            if(new_piece_position.Substring(2,2) == "=B") Debug.Log("Bishop");
-            
-            return true;
-        }
-        else{
-            return false;
-        }
-    }
-
-
+    } 
 }

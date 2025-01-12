@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.Animations;
 
 public class BoardHighlighter
 {   
@@ -16,8 +15,8 @@ public class BoardHighlighter
     private Color BLACK_COLOUR;
     private Color32 HIGHLIGHT_COLOUR = new Color32(47, 169, 140, 255);
 
-    List<GameObject> white_tiles;
-    List<GameObject> black_tiles;
+    List<GameObject> white_tiles = new List<GameObject>();
+    List<GameObject> black_tiles = new List<GameObject>();
     
     public BoardHighlighter() {
         // SETUP STARTING COLOURS
@@ -31,6 +30,8 @@ public class BoardHighlighter
 
 
     public void Highlight_Tiles(List<String> uci_string_list) {
+        Reset_Tiles();
+
         white_tiles = new List<GameObject>();
         black_tiles = new List<GameObject>();
 

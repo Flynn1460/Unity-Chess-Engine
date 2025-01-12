@@ -13,10 +13,14 @@ public class MoveGenerator
     private static bool blackRookA8Moved = false;
     private static bool blackRookH8Moved = false;
 
-
-    // Method to generate all legal moves for a given board position
     public List<string> GenerateLegalMoves(int[,] board, bool isWhiteTurn)
     {
+        if (!isWhiteTurn)
+        {
+            board = FlipBoard(board);
+            enPassantTarget = FlipPosition(enPassantTarget);
+        }
+
         List<string> legalMoves = new List<string>();
 
         for (int row = 0; row < 8; row++)
@@ -27,30 +31,35 @@ public class MoveGenerator
                 if (piece == 0) continue; // Empty square
 
                 bool isWhitePiece = piece >= 1 && piece <= 7;
-                if (isWhitePiece != isWhiteTurn) continue; // Skip opponent pieces
+                if (!isWhitePiece) continue; // Skip opponent pieces (black after flipping)
 
                 switch (piece % 7) // Normalize piece type for movement logic
                 {
                     case 1: // Pawn
-                        AddPawnMoves(board, row, col, isWhiteTurn, legalMoves);
+                        AddPawnMoves(board, row, col, true, legalMoves);
                         break;
                     case 2: // Rook
-                        AddRookMoves(board, row, col, isWhiteTurn, legalMoves);
+                        AddRookMoves(board, row, col, true, legalMoves);
                         break;
                     case 3: // Knight
-                        AddKnightMoves(board, row, col, isWhiteTurn, legalMoves);
+                        AddKnightMoves(board, row, col, true, legalMoves);
                         break;
                     case 4: // Bishop
-                        AddBishopMoves(board, row, col, isWhiteTurn, legalMoves);
+                        AddBishopMoves(board, row, col, true, legalMoves);
                         break;
                     case 5: // Queen
-                        AddQueenMoves(board, row, col, isWhiteTurn, legalMoves);
+                        AddQueenMoves(board, row, col, true, legalMoves);
                         break;
                     case 6: // King
-                        AddKingMoves(board, row, col, isWhiteTurn, legalMoves);
+                        AddKingMoves(board, row, col, true, legalMoves);
                         break;
                 }
             }
+        }
+
+        if (!isWhiteTurn)
+        {
+            legalMoves = FlipMoves(legalMoves);
         }
 
         return legalMoves;
@@ -88,60 +97,59 @@ public class MoveGenerator
         return legalMoves;
     }
 
-    // MOVES
     private static void AddPawnMoves(int[,] board, int row, int col, bool isWhite, List<string> moves)
+{
+    int direction = isWhite ? 1 : -1; // Forward for white is +1, for black is -1
+    int startRow = isWhite ? 1 : 6;
+    int promotionRow = isWhite ? 7 : 0;
+
+    // Forward move
+    if (IsInBounds(row + direction, col) && board[row + direction, col] == 0)
     {
-        int direction = isWhite ? 1 : -1;
-        int startRow = isWhite ? 1 : 6;
-        int promotionRow = isWhite ? 7 : 0;
-
-        // Forward move
-        if (IsInBounds(row + direction, col) && board[row + direction, col] == 0)
+        if (row + direction == promotionRow)
         {
-            if (row + direction == promotionRow)
-            {
-                AddPawnPromotionMoves(row, col, row + direction, col, moves);
-            }
-            else
-            {
-                moves.Add(FormatMove(row, col, row + direction, col));
-            }
-
-            // Double forward move
-            if (row == startRow && board[row + 2 * direction, col] == 0)
-            {
-                moves.Add(FormatMove(row, col, row + 2 * direction, col));
-                enPassantTarget = (row + direction, col);
-            }
+            AddPawnPromotionMoves(row, col, row + direction, col, moves);
+        }
+        else
+        {
+            moves.Add(FormatMove(row, col, row + direction, col));
         }
 
-        // Captures
-        foreach (int dc in new[] { -1, 1 })
+        // Double forward move
+        if (row == startRow && board[row + 2 * direction, col] == 0)
         {
-            int targetRow = row + direction;
-            int targetCol = col + dc;
-            if (IsInBounds(targetRow, targetCol))
-            {
-                if (IsOpponentPiece(board[targetRow, targetCol], isWhite))
-                {
-                    if (targetRow == promotionRow)
-                    {
-                        AddPawnPromotionMoves(row, col, targetRow, targetCol, moves);
-                    }
-                    else
-                    {
-                        moves.Add(FormatMove(row, col, targetRow, targetCol));
-                    }
-                }
+            moves.Add(FormatMove(row, col, row + 2 * direction, col));
+            enPassantTarget = (row + direction, col);
+        }
+    }
 
-                // En passant
-                if (enPassantTarget.HasValue && enPassantTarget.Value == (targetRow, targetCol))
+    // Captures
+    foreach (int dc in new[] { -1, 1 })
+    {
+        int targetRow = row + direction;
+        int targetCol = col + dc;
+        if (IsInBounds(targetRow, targetCol))
+        {
+            if (IsOpponentPiece(board[targetRow, targetCol], isWhite))
+            {
+                if (targetRow == promotionRow)
                 {
-                    moves.Add(FormatMove(row, col, targetRow, targetCol) + " e.p.");
+                    AddPawnPromotionMoves(row, col, targetRow, targetCol, moves);
                 }
+                else
+                {
+                    moves.Add(FormatMove(row, col, targetRow, targetCol));
+                }
+            }
+
+            // En passant
+            if (enPassantTarget.HasValue && enPassantTarget.Value == (targetRow, targetCol))
+            {
+                moves.Add(FormatMove(row, col, targetRow, targetCol) + " e.p.");
             }
         }
     }
+}
 
     private static void AddPawnPromotionMoves(int startRow, int startCol, int endRow, int endCol, List<string> moves)
     {
@@ -154,12 +162,6 @@ public class MoveGenerator
     private static void AddRookMoves(int[,] board, int row, int col, bool isWhite, List<string> moves)
     {
         AddSlidingMoves(board, row, col, isWhite, moves, new[] { (1, 0), (-1, 0), (0, 1), (0, -1) });
-
-        // Update rook movement tracking for castling
-        if (isWhite && row == 0 && col == 0) whiteRookA1Moved = true;
-        if (isWhite && row == 0 && col == 7) whiteRookH1Moved = true;
-        if (!isWhite && row == 7 && col == 0) blackRookA8Moved = true;
-        if (!isWhite && row == 7 && col == 7) blackRookH8Moved = true;
     }
 
     private static void AddKnightMoves(int[,] board, int row, int col, bool isWhite, List<string> moves)
@@ -194,41 +196,28 @@ public class MoveGenerator
     }
 
     private static void AddKingMoves(int[,] board, int row, int col, bool isWhite, List<string> moves)
+{
+    foreach (var delta in new[] { (1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, -1), (1, -1), (-1, 1) })
     {
-        foreach (var delta in new[] { (1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, -1), (1, -1), (-1, 1) })
+        int newRow = row + delta.Item1;
+        int newCol = col + delta.Item2;
+
+        // Ensure the move is within bounds and not a friendly piece
+        if (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board[newRow, newCol], isWhite))
         {
-            int newRow = row + delta.Item1;
-            int newCol = col + delta.Item2;
-            if (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board[newRow, newCol], isWhite))
+            // Simulate the move on a copy of the board
+            int[,] futureBoard = (int[,])board.Clone();
+            futureBoard[newRow, newCol] = futureBoard[row, col]; // Move king
+            futureBoard[row, col] = 0; // Empty original square
+
+            // Check if the king would be in check after the move
+            if (!IsKingInCheck(futureBoard, isWhite))
             {
                 moves.Add(FormatMove(row, col, newRow, newCol));
             }
         }
-
-        // Castling
-        if (isWhite && !whiteKingMoved && row == 0 && col == 4)
-        {
-            if (!whiteRookA1Moved && board[0, 1] == 0 && board[0, 2] == 0 && board[0, 3] == 0)
-            {
-                moves.Add("e1c1");
-            }
-            if (!whiteRookH1Moved && board[0, 5] == 0 && board[0, 6] == 0)
-            {
-                moves.Add("e1g1");
-            }
-        }
-        else if (!isWhite && !blackKingMoved && row == 7 && col == 4)
-        {
-            if (!blackRookA8Moved && board[7, 1] == 0 && board[7, 2] == 0 && board[7, 3] == 0)
-            {
-                moves.Add("e8c8");
-            }
-            if (!blackRookH8Moved && board[7, 5] == 0 && board[7, 6] == 0)
-            {
-                moves.Add("e8g8");
-            }
-        }
     }
+}
 
     private static void AddSlidingMoves(int[,] board, int row, int col, bool isWhite, List<string> moves, (int, int)[] directions)
     {
@@ -248,9 +237,111 @@ public class MoveGenerator
 
     private static bool IsInBounds(int row, int col) => row >= 0 && row < 8 && col >= 0 && col < 8;
 
-    private static bool IsFriendlyPiece(int piece, bool isWhite) => (isWhite && piece >= 1 && piece <= 7) || (!isWhite && piece >= 8 && piece <= 13);
+    private static bool IsFriendlyPiece(int piece, bool isWhite)
+    {
+        return isWhite ? (piece >= 1 && piece <= 7) : (piece >= 8 && piece <= 13);
+    }
 
-    private static bool IsOpponentPiece(int piece, bool isWhite) => (isWhite && piece >= 8 && piece <= 13) || (!isWhite && piece >= 1 && piece <= 7);
+    private static bool IsOpponentPiece(int piece, bool isWhite)
+    {
+        return isWhite ? (piece >= 8 && piece <= 13) : (piece >= 1 && piece <= 7);
+    }
 
-    private static string FormatMove(int startRow, int startCol, int endRow, int endCol) => $"{(char)(startCol + 'a')}{1 + startRow}{(char)(endCol + 'a')}{1 + endRow}";
+    private static string FormatMove(int startRow, int startCol, int endRow, int endCol) =>
+        $"{(char)(startCol + 'a')}{1 + startRow}{(char)(endCol + 'a')}{1 + endRow}";
+
+    private static int[,] FlipBoard(int[,] board)
+    {
+        int[,] flipped = new int[8, 8];
+        for (int row = 0; row < 8; row++)
+        {
+            for (int col = 0; col < 8; col++)
+            {
+                flipped[7 - row, 7 - col] = board[row, col];
+            }
+        }
+        return flipped;
+    }
+
+    private static (int, int)? FlipPosition((int, int)? position)
+    {
+        if (!position.HasValue) return null;
+        return (7 - position.Value.Item1, 7 - position.Value.Item2);
+    }
+
+    private static List<string> FlipMoves(List<string> moves)
+    {
+        List<string> flippedMoves = new List<string>();
+        foreach (var move in moves)
+        {
+            int startCol = move[0] - 'a';
+            int startRow = move[1] - '1';
+            int endCol = move[2] - 'a';
+            int endRow = move[3] - '1';
+
+            flippedMoves.Add(FormatMove(7 - startRow, 7 - startCol, 7 - endRow, 7 - endCol));
+        }
+        return flippedMoves;
+    }
+
+    private static bool IsKingInCheck(int[,] board, bool isWhite)
+    {
+        // Find the king's position
+        int kingPiece = isWhite ? 6 : 12;
+        (int kingRow, int kingCol) = (-1, -1);
+
+        for (int r = 0; r < 8; r++)
+        {
+            for (int c = 0; c < 8; c++)
+            {
+                if (board[r, c] == kingPiece)
+                {
+                    kingRow = r;
+                    kingCol = c;
+                    break;
+                }
+            }
+        }
+
+        Debug.Log(kingRow + ", " + kingCol);
+
+        // Verify if any opponent piece can attack the king's position
+        /*
+        for (int r = 0; r < 8; r++)
+        {
+            for (int c = 0; c < 8; c++)
+            {
+                int piece = board[r, c];
+                if (IsOpponentPiece(piece, isWhite))
+                {
+                    // Generate moves for the opponent piece
+                    List<string> opponentMoves = new List<string>();
+                    switch (piece % 7)
+                    {
+                        case 1: AddPawnMoves(board, r, c, !isWhite, opponentMoves); break;
+                        case 2: AddRookMoves(board, r, c, !isWhite, opponentMoves); break;
+                        case 3: AddKnightMoves(board, r, c, !isWhite, opponentMoves); break;
+                        case 4: AddBishopMoves(board, r, c, !isWhite, opponentMoves); break;
+                        case 5: AddQueenMoves(board, r, c, !isWhite, opponentMoves); break;
+                        case 6: AddKingMoves(board, r, c, !isWhite, opponentMoves); break;
+                    }
+
+                    Debug.Log(opponentMoves);
+
+                    // Check if any move attacks the king
+                    foreach (var move in opponentMoves)
+                    {
+                        int endRow = move[2] - '1';
+                        int endCol = move[3] - 'a';
+                        if (endRow == kingRow && endCol == kingCol)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }*/
+
+        return false;
+    }
 }
