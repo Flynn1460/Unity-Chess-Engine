@@ -11,7 +11,7 @@ public class Board
 
     private Sprite queen_texture = Resources.Load<Sprite>("Chess/wq");
 
-    private bool IS_TURN_RESTRICTIVE = false;
+    //private bool IS_TURN_RESTRICTIVE = false;
 
     public bool TURN = true;
     public int[,] BOARD = new int[8,8] {
@@ -24,6 +24,8 @@ public class Board
             { 8,  8,  8,  8,  8,  8,  8, 8 },
             { 9, 10, 11, 12, 13, 12, 10, 9 }
     };
+
+    public List<String> MOVE_LIST = new List<String>();
 
     private int[,] EMPTY_BOARD = new int[8,8] {
         { 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -38,6 +40,7 @@ public class Board
 
 
     private MoveGenerator moveGenerator = new MoveGenerator();
+    private NewMoveGenerator newmoveGenerator = new NewMoveGenerator();
     
     public Board(string FEN="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1") {
         //set_fen(FEN);
@@ -119,16 +122,20 @@ public class Board
 
 
     public List<String> GetLegalMoves() {
-        return moveGenerator.GenerateLegalMoves(BOARD, TURN);
+        return newmoveGenerator.GenerateLegalMoves(BOARD, TURN, MOVE_LIST);
+
+        //return moveGenerator.GenerateLegalMoves(BOARD, TURN);
     }
 
     public List<String> GetPieceLegalMoves(List<int> SQUARE) {
-        return moveGenerator.GenerateLegalMoves_ForPiece(BOARD, TURN, SQUARE);
+        return newmoveGenerator.GenerateLegalMoves(BOARD, TURN, MOVE_LIST, filter_square:SQUARE);
+
+        //return moveGenerator.GenerateLegalMoves_ForPiece(BOARD, TURN, SQUARE);
     }
 
 
     public void MovingPiece(string piecePosition) {
-        List<String> piece_legal_moves = moveGenerator.GenerateLegalMoves_ForPiece(BOARD, TURN, tools.uci_converter(piecePosition));
+        List<String> piece_legal_moves = GetPieceLegalMoves(tools.uci_converter(piecePosition));
         List<String> stripped_moves = tools.strip_moves(piece_legal_moves, false, include_promotion:false); // Get list of moves, ignore promotion data
 
         boardHighlighter.Highlight_Tiles(stripped_moves);
@@ -141,6 +148,11 @@ public class Board
 
         BOARD[old_position[0], old_position[1]] = 0;
         BOARD[new_position[0], new_position[1]] = piece;
+
+        if (piece == 1 && new_position[0] == 7) BOARD[new_position[0], new_position[1]] = 5; // WHITE QUEEN PROMO
+        if (piece == 8 && new_position[0] == 0) BOARD[new_position[0], new_position[1]] = 12; // BLACK QUEEN PROMO
+
+        MOVE_LIST.Add(tools.uci_converter(old_position, new_position));
 
         // If move is pushed then highlighting isn't needed
         boardHighlighter.Reset_Tiles();

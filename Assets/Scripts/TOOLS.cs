@@ -43,6 +43,16 @@ public class TOOLS
         }
     }
 
+    public String uci_converter(List<int> coord_value1, List<int> coord_value2) {
+            int file = coord_value1[1];
+            int rank = coord_value1[0];
+
+            int file2 = coord_value2[1];
+            int rank2 = coord_value2[0];
+
+            return (char)('a' + file) + (rank+1).ToString() + (char)('a' + file2) + (rank2+1).ToString();
+    }
+
 
 
     public List<String> strip_moves(List<string> moves, bool stripFRONTorBACK, bool include_promotion=true) {
@@ -57,4 +67,7 @@ public class TOOLS
 
         return newMoves;
     }
+
+
+    public int bool_num(bool x) { return x ? 1 : 0; }
 }

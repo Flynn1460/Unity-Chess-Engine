@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class MoveGenerator
 {
+    private static TOOLS tools = new TOOLS();
     private static (int row, int col)? enPassantTarget = null;
     private static bool whiteKingMoved = false;
     private static bool blackKingMoved = false;
@@ -195,7 +196,7 @@ public class MoveGenerator
         AddSlidingMoves(board, row, col, isWhite, moves, new[] { (1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, -1), (1, -1), (-1, 1) });
     }
 
-    private static void AddKingMoves(int[,] board, int row, int col, bool isWhite, List<string> moves)
+    private static void AddKingMoves(int[,] board, int row, int col, bool isWhite, List<string> moves, bool non_recurion=false)
 {
     foreach (var delta in new[] { (1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, -1), (1, -1), (-1, 1) })
     {
@@ -211,9 +212,11 @@ public class MoveGenerator
             futureBoard[row, col] = 0; // Empty original square
 
             // Check if the king would be in check after the move
-            if (!IsKingInCheck(futureBoard, isWhite))
-            {
-                moves.Add(FormatMove(row, col, newRow, newCol));
+            if (!non_recurion){
+                if (!IsKingInCheck(futureBoard, isWhite))
+                {
+                    moves.Add(FormatMove(row, col, newRow, newCol));
+                }
             }
         }
     }
@@ -285,63 +288,72 @@ public class MoveGenerator
     }
 
     private static bool IsKingInCheck(int[,] board, bool isWhite)
-    {
-        // Find the king's position
-        int kingPiece = isWhite ? 6 : 12;
-        (int kingRow, int kingCol) = (-1, -1);
+{
+    // Find the king's position
+    int kingPiece = isWhite ? 6 : 12;
+    (int kingRow, int kingCol) = (-1, -1);
 
-        for (int r = 0; r < 8; r++)
+    for (int r = 0; r < 8; r++)
+    {
+        for (int c = 0; c < 8; c++)
         {
-            for (int c = 0; c < 8; c++)
+            if (board[r, c] == kingPiece)
             {
-                if (board[r, c] == kingPiece)
-                {
-                    kingRow = r;
-                    kingCol = c;
-                    break;
-                }
+                kingRow = r;
+                kingCol = c;
+                break;
             }
         }
-
-        Debug.Log(kingRow + ", " + kingCol);
-
-        // Verify if any opponent piece can attack the king's position
-        /*
-        for (int r = 0; r < 8; r++)
-        {
-            for (int c = 0; c < 8; c++)
-            {
-                int piece = board[r, c];
-                if (IsOpponentPiece(piece, isWhite))
-                {
-                    // Generate moves for the opponent piece
-                    List<string> opponentMoves = new List<string>();
-                    switch (piece % 7)
-                    {
-                        case 1: AddPawnMoves(board, r, c, !isWhite, opponentMoves); break;
-                        case 2: AddRookMoves(board, r, c, !isWhite, opponentMoves); break;
-                        case 3: AddKnightMoves(board, r, c, !isWhite, opponentMoves); break;
-                        case 4: AddBishopMoves(board, r, c, !isWhite, opponentMoves); break;
-                        case 5: AddQueenMoves(board, r, c, !isWhite, opponentMoves); break;
-                        case 6: AddKingMoves(board, r, c, !isWhite, opponentMoves); break;
-                    }
-
-                    Debug.Log(opponentMoves);
-
-                    // Check if any move attacks the king
-                    foreach (var move in opponentMoves)
-                    {
-                        int endRow = move[2] - '1';
-                        int endCol = move[3] - 'a';
-                        if (endRow == kingRow && endCol == kingCol)
-                        {
-                            return true;
-                        }
-                    }
-                }
-            }
-        }*/
-
-        return false;
     }
+
+    // Generate opponent's moves
+    List<string> opponentMoves = new List<string>();
+
+    for (int row = 0; row < 8; row++)
+    {
+        for (int col = 0; col < 8; col++)
+        {
+            int piece = board[row, col];
+            if (piece == 0) continue; // Empty square
+
+            bool isOpponentPiece = isWhite ? (piece >= 8 && piece <= 13) : (piece >= 1 && piece <= 7);
+            if (!isOpponentPiece) continue; // Skip friendly pieces
+
+            switch (piece % 7) // Normalize piece type for movement logic
+            {
+                case 1: // Pawn
+                    AddPawnMoves(board, row, col, !isWhite, opponentMoves);
+                    break;
+                case 2: // Rook
+                    AddRookMoves(board, row, col, !isWhite, opponentMoves);
+                    break;
+                case 3: // Knight
+                    AddKnightMoves(board, row, col, !isWhite, opponentMoves);
+                    break;
+                case 4: // Bishop
+                    AddBishopMoves(board, row, col, !isWhite, opponentMoves);
+                    break;
+                case 5: // Queen
+                    AddQueenMoves(board, row, col, !isWhite, opponentMoves);
+                    break;
+                case 6: // King
+                    AddKingMoves(board, row, col, !isWhite, opponentMoves, non_recurion: true);
+                    break;
+            }
+        }
+    }
+
+    // Check if the king's position is targeted
+    string kingPosition = FormatMove(kingRow, kingCol, kingRow, kingCol).Substring(0, 2);
+
+    foreach (string move in opponentMoves)
+    {
+        if (move.Contains(kingPosition))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
 }
