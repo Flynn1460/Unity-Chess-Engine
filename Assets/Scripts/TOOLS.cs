@@ -69,5 +69,30 @@ public class TOOLS
     }
 
 
+    public int[,] cpy_board(int[,] board) {
+        int rows = board.GetLength(0);
+        int cols = board.GetLength(1);
+
+        int[,] copy = new int[rows, cols];
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                copy[i, j] = board[i, j];
+            }
+        }
+        return copy;
+    }
+
+
+    public List<int> find_value(int[,] board, int piece) {
+        for (int r=0; r<8;r++) {
+            for (int c=0; c<8; c++) {
+                if (board[r, c] == piece) return new List<int>() {r, c};
+            }
+        }
+        return null;
+    }
+
     public int bool_num(bool x) { return x ? 1 : 0; }
 }

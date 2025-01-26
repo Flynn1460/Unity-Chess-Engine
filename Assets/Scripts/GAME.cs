@@ -1,6 +1,7 @@
 #pragma warning disable CS0219
 
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GAME : MonoBehaviour
 {
@@ -28,5 +29,13 @@ public class GAME : MonoBehaviour
             turn = board.TURN;
             timer_controller.flip_colours(turn);
         }
+
+        if (board.IS_CHECKMATE || timer_controller.IS_TIMEOUT) {
+            GameOver();
+        }
+    }
+
+    void GameOver() {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

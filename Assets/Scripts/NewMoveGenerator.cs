@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting.FullSerializer;
 using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 
@@ -46,8 +47,6 @@ public class NewMoveGenerator
         foreach(Square piece_square in piece_squares_for_turn) {
             if (filter_square != null && !filter_square.SequenceEqual(piece_square.rcList)) continue;
 
-            
-
             switch(piece_square.piece_type) {
                 case 1: legal_moves.AddRange(GetPawnMoves(board, piece_square, board_move_list)); break;
                 case 2: legal_moves.AddRange(GetRookMoves(board, piece_square)); break;
@@ -59,6 +58,44 @@ public class NewMoveGenerator
         }
 
         return legal_moves;
+    }
+
+    public bool isCheckmate(int[,] board_, bool isWhite, List<String> board_move_list) {
+        /*
+        Check for all moves for whoevers turn it is can white checkmate you
+        */
+        int[,] board = tools.cpy_board(board_);
+
+        List<String> playable_moves = GenerateLegalMoves(board, isWhite, board_move_list);
+
+        foreach(String playable_move in playable_moves) {
+            List<int> move = tools.uci_converter(playable_move);
+            
+            Debug.Log("# "+playable_move);
+
+            board[move[3], move[2]] = board[move[1], move[0]];
+            board[move[1], move[0]] = 0;
+
+            isCheck(board, isWhite, board_move_list);
+        }
+
+        return false;
+    }
+
+    public bool isCheck(int[,] board, bool isWhite, List<String> board_move_list) {
+        List<String> playable_moves = GenerateLegalMoves(board, !isWhite, board_move_list);
+
+        // King Pos Calc        
+        int king_piece = isWhite ? 6 : 13;
+        List<int> king_location = tools.find_value(board, king_piece);
+
+
+        foreach(String playable_move in playable_moves) {
+            Debug.Log("= "+playable_move + "," + tools.uci_converter(king_location));
+        }
+
+
+        return false;
     }
 
     private List<Square> GetSquares(int[,] board, int colour=0) {
@@ -221,6 +258,25 @@ public class NewMoveGenerator
     private List<String> GetKingMoves(int[,] board, Square piece_square) {
         List<String> legal_move_list = new List<String>();
 
+        int[][] move_pattern = new[] {
+
+            new[] { -1, -1 }, new[] { 0, 1 },
+            new[] { -1, 0 }, new[] { 1, -1 },
+            new[] { 1, 0 }, new[] { 1, 0 },
+            new[] { 0, -1 }, new[] { 1, 1 }
+
+        };
+
+        foreach (int[] move in move_pattern) {
+            int newRow = piece_square.row + move[0];
+            int newCol = piece_square.col + move[1];
+
+            if (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board[newRow, newCol], piece_square.isWhite))
+            {
+                legal_move_list.Add(FormatMove(piece_square.row, piece_square.col, newRow, newCol));
+            }
+        }
+        
         return legal_move_list;
     }
 

@@ -20,6 +20,8 @@ public class TEXT_TIMER_CONTROLLER : MonoBehaviour
     private Color32 TURN_COLOUR = new Color32(91, 238, 111, 255);
 
 
+    public bool IS_TIMEOUT = false;
+
     void Start()
     {
         board = FindObjectOfType<GAME>().board;
@@ -87,19 +89,18 @@ public class TEXT_TIMER_CONTROLLER : MonoBehaviour
     }
 
     IEnumerator UpdateClock() {
-        string currentScene = SceneManager.GetActiveScene().name;
         while (true) {
             if (board.TURN) {
                 WHITE_TIME -= 0.1f;
                 if (WHITE_TIME <= 0f) {
-                    SceneManager.LoadScene(currentScene);
+                    IS_TIMEOUT = true;
                 }
             }
 
             if (!board.TURN) {
                 BLACK_TIME -= 0.1f;
                 if (BLACK_TIME <= 0f) {
-                    SceneManager.LoadScene(currentScene);
+                    IS_TIMEOUT = true;
                 }
             }
 

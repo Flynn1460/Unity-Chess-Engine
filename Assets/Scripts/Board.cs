@@ -27,6 +27,8 @@ public class Board
 
     public List<String> MOVE_LIST = new List<String>();
 
+    public bool IS_CHECKMATE = false;
+
     private int[,] EMPTY_BOARD = new int[8,8] {
         { 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -133,6 +135,9 @@ public class Board
         //return moveGenerator.GenerateLegalMoves_ForPiece(BOARD, TURN, SQUARE);
     }
 
+    public bool GetCheckmateCheck() {
+        return newmoveGenerator.isCheckmate(BOARD, TURN, MOVE_LIST);
+    }
 
     public void MovingPiece(string piecePosition) {
         List<String> piece_legal_moves = GetPieceLegalMoves(tools.uci_converter(piecePosition));
@@ -175,6 +180,11 @@ public class Board
                 PIECE_CONTROLLER pc = GameObject.Find("h1").GetComponent<PIECE_CONTROLLER>();
                 pc.ExternalMove(new List<int>() {0, 5});
             }
+        }
+    
+        // CHECKMATE
+        if (GetCheckmateCheck()) {
+            IS_CHECKMATE = true;
         }
     } 
 }

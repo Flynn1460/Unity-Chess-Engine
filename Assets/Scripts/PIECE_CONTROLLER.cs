@@ -127,7 +127,6 @@ public class PIECE_CONTROLLER : MonoBehaviour
         else if (stripped_moves.Contains(new_piece_position + "=Q")) {
             b.Push(old_position, new_position, pawn_promote_piece: 5+(7*PIECE_COLOUR));
             GetComponent<SpriteRenderer>().sprite = QUEEN_TEXTURE;
-            Debug.Log("x");
             return 1;
         }
 
