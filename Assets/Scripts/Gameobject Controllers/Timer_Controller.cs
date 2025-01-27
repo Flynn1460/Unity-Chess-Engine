@@ -11,7 +11,7 @@ public class TEXT_TIMER_CONTROLLER : MonoBehaviour
     private TextMeshProUGUI white_timer;
     private TextMeshProUGUI black_timer;
 
-    private Board board;
+    private BoardManager board_manager;
 
     private float WHITE_TIME = 1f;
     private float BLACK_TIME = 1f;
@@ -24,7 +24,7 @@ public class TEXT_TIMER_CONTROLLER : MonoBehaviour
 
     void Start()
     {
-        board = FindObjectOfType<GAME>().board;
+        board_manager = FindFirstObjectByType<GAME>().board_manager;
 
         GameObject whiteTimeObj = GameObject.Find("WHITE TIME");
         GameObject blackTimeObj = GameObject.Find("BLACK TIME");
@@ -90,14 +90,14 @@ public class TEXT_TIMER_CONTROLLER : MonoBehaviour
 
     IEnumerator UpdateClock() {
         while (true) {
-            if (board.TURN) {
+            if (board_manager.board.turn) {
                 WHITE_TIME -= 0.1f;
                 if (WHITE_TIME <= 0f) {
                     IS_TIMEOUT = true;
                 }
             }
 
-            if (!board.TURN) {
+            if (!board_manager.board.turn) {
                 BLACK_TIME -= 0.1f;
                 if (BLACK_TIME <= 0f) {
                     IS_TIMEOUT = true;

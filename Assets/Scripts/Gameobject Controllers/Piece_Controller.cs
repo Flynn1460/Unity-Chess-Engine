@@ -7,7 +7,7 @@ public class PIECE_CONTROLLER : MonoBehaviour
 {
     // OTHER SCRIPTS
     private TOOLS tools;
-    private Board b;
+    private BoardManager b;
 
     // SERIALIZED FIELDS
     [Header("Pawn Promotional Textures")]
@@ -26,7 +26,7 @@ public class PIECE_CONTROLLER : MonoBehaviour
 
     // START & UPDATE UNITY FUNCTIONS
     private void Start() {
-        b = FindObjectOfType<GAME>().board; // Get Game board
+        b = FindFirstObjectByType<GAME>().board_manager; // Get Game board
         tools = new TOOLS();
     }
 
@@ -111,7 +111,7 @@ public class PIECE_CONTROLLER : MonoBehaviour
 
 
     public int DroppedPiece(string old_piece_position, string new_piece_position) {
-        List<String> piece_legal_moves = b.GetPieceLegalMoves(tools.uci_converter(old_piece_position));
+        List<String> piece_legal_moves = b.newmoveGenerator.GenerateLegalMoves(b.board, filter_square:tools.uci_converter(old_piece_position));
         List<String> stripped_moves = tools.strip_moves(piece_legal_moves, false);
 
         // Position Data

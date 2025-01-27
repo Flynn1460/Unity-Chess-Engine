@@ -85,14 +85,15 @@ public class TOOLS
     }
 
 
-    public List<int> find_value(int[,] board, int piece) {
-        for (int r=0; r<8;r++) {
-            for (int c=0; c<8; c++) {
-                if (board[r, c] == piece) return new List<int>() {r, c};
-            }
-        }
-        return null;
+    public List<T> ls_combine<T>(List<T> ls1, List<T> ls2) {
+        List<T> added = new List<T>();
+
+        foreach (T t in ls1) {  added.Add(t);  }
+        foreach (T t in ls2) {  added.Add(t);  }
+
+        return added;
     }
+
 
     public int bool_num(bool x) { return x ? 1 : 0; }
 }
