@@ -38,7 +38,7 @@ public class NewMoveGenerator
 {
     private TOOLS tools = new TOOLS();
 
-    public List<String> GenerateLegalMoves(int[,] board, bool isWhite, List<String> board_move_list, List<int> filter_square=null) {
+    public List<String> GenerateLegalMoves(int[,] board, bool isWhite, List<String> board_move_list, List<int> filter_square=null, bool check_search=false) {
         List<String> legal_moves = new List<String>();
 
         List<Square> piece_squares_for_turn = GetSquares(board, colour:tools.bool_num(isWhite));
@@ -55,6 +55,30 @@ public class NewMoveGenerator
                 case 5: legal_moves.AddRange(GetQueenMoves(board, piece_square)); break;
                 case 6: legal_moves.AddRange(GetKingMoves(board, piece_square)); break;
             }
+        }
+
+        if (!check_search) {
+            int[,] board_ = tools.cpy_board(board);
+            int old_pos_piece = 0;
+
+            List<String> removed_moves = new List<String>();
+
+            foreach (String move_ in legal_moves) {
+                List<int> move = tools.uci_converter(move_);
+
+                old_pos_piece = board_[move[3], move[2]];
+                board_[move[3], move[2]] = board_[move[1], move[0]];
+                board_[move[1], move[0]] = 0;
+
+                if (isCheck(board_, isWhite, board_move_list)) {
+                    removed_moves.Add(move_);
+                    Debug.Log("Removed " + move_);
+                }
+
+                board_ = tools.cpy_board(board);
+            }
+
+            legal_moves = legal_moves.Except(removed_moves).ToList();
         }
 
         return legal_moves;
@@ -94,7 +118,7 @@ public class NewMoveGenerator
     }
 
     public bool isCheck(int[,] board, bool isWhite, List<String> board_move_list) {
-        List<String> playable_moves = GenerateLegalMoves(board, !isWhite, board_move_list);
+        List<String> playable_moves = GenerateLegalMoves(board, !isWhite, board_move_list, check_search:true);
 
         // King Pos Calc        
         int king_piece = isWhite ? 6 : 13;
@@ -110,6 +134,7 @@ public class NewMoveGenerator
 
         return is_in_check;
     }
+
 
     private List<Square> GetSquares(int[,] board, int colour=0) {
         List<Square> enemy_squares = new List<Square>();
@@ -284,14 +309,9 @@ public class NewMoveGenerator
             int newRow = piece_square.row + move[0];
             int newCol = piece_square.col + move[1];
 
-            try {
-                if (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board[newRow, newCol], piece_square.isWhite))
-                {
-                    legal_move_list.Add(FormatMove(piece_square.row, piece_square.col, newRow, newCol));
-                }
-            }
-            catch {
-                Debug.Log("....");
+            if (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board[newRow, newCol], piece_square.isWhite))
+            {
+                legal_move_list.Add(FormatMove(piece_square.row, piece_square.col, newRow, newCol));
             }
         }
         
