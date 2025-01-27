@@ -65,18 +65,29 @@ public class NewMoveGenerator
         Check for all moves for whoevers turn it is can white checkmate you
         */
         int[,] board = tools.cpy_board(board_);
+        int old_pos_piece = 0;
 
         List<String> playable_moves = GenerateLegalMoves(board, isWhite, board_move_list);
+
+        int number_of_total_moves = playable_moves.Count;
+        int number_of_safe_moves = 0;
 
         foreach(String playable_move in playable_moves) {
             List<int> move = tools.uci_converter(playable_move);
             
-            Debug.Log("# "+playable_move);
-
+            old_pos_piece = board[move[3], move[2]];
             board[move[3], move[2]] = board[move[1], move[0]];
             board[move[1], move[0]] = 0;
 
-            isCheck(board, isWhite, board_move_list);
+            if (!isCheck(board, isWhite, board_move_list)) {
+                number_of_safe_moves += 1;
+            }
+
+            board = tools.cpy_board(board_);
+        }
+
+        if (number_of_safe_moves == 0) {
+            Debug.Log("Checkmate");
         }
 
         return false;
@@ -89,13 +100,15 @@ public class NewMoveGenerator
         int king_piece = isWhite ? 6 : 13;
         List<int> king_location = tools.find_value(board, king_piece);
 
+        bool is_in_check = false;
 
         foreach(String playable_move in playable_moves) {
-            Debug.Log("= "+playable_move + "," + tools.uci_converter(king_location));
+            if (playable_move.Substring(2,2) == tools.uci_converter(king_location)) {
+                is_in_check = true;
+            }
         }
 
-
-        return false;
+        return is_in_check;
     }
 
     private List<Square> GetSquares(int[,] board, int colour=0) {
@@ -271,9 +284,14 @@ public class NewMoveGenerator
             int newRow = piece_square.row + move[0];
             int newCol = piece_square.col + move[1];
 
-            if (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board[newRow, newCol], piece_square.isWhite))
-            {
-                legal_move_list.Add(FormatMove(piece_square.row, piece_square.col, newRow, newCol));
+            try {
+                if (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board[newRow, newCol], piece_square.isWhite))
+                {
+                    legal_move_list.Add(FormatMove(piece_square.row, piece_square.col, newRow, newCol));
+                }
+            }
+            catch {
+                Debug.Log("....");
             }
         }
         
