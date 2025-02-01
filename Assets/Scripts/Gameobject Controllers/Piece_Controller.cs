@@ -111,7 +111,7 @@ public class PIECE_CONTROLLER : MonoBehaviour
 
 
     public int DroppedPiece(string old_piece_position, string new_piece_position) {
-        List<String> piece_legal_moves = b.newmoveGenerator.GenerateLegalMoves(b.board, filter_square:tools.uci_converter(old_piece_position));
+        List<String> piece_legal_moves = b.GenerateLegalMoves(filter_square:tools.uci_converter(old_piece_position));
         List<String> stripped_moves = tools.strip_moves(piece_legal_moves, false);
 
         // Position Data

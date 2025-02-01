@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEditor.UIElements;
 
 
 public class ConsoleUCIInterface
@@ -89,39 +90,44 @@ public class ConsoleUCIInterface
 }
 
 
-public class GameMatcher : MonoBehaviour
+public class GameMatcher
 {
     private ConsoleUCIInterface ENGINE_stockfish;
     private TOOLS tools;
 
+    private Dictionary<int, ConsoleUCIInterface> engine_refrence;
     private string move;
+    private int move_time;
 
-    void Start() {
+    public GameMatcher(int engine_movetime) {
         tools = new TOOLS();
+        engine_refrence = new Dictionary<int, ConsoleUCIInterface>();
 
         ENGINE_stockfish = new ConsoleUCIInterface(@"C:/Users/flynn/OneDrive/Dokumentumok/Programming/Unity Projects/Chess Programming/Assets/Scripts/ENGINES/ENGINE_Stockfish/stockfish/stockfish.exe");
+        engine_refrence.Add(1, ENGINE_stockfish);    
 
-        //engine.SendCommand("position startpos", null);
-        //string response = engine.SendCommand("go movetime 100", "bestmove");
-        //UnityEngine.Debug.Log(response);
-
-        Board b = new Board();
-
-        for (int i=0; i<10; i++) {
-            move = GetMoveFromUCI(b, ENGINE_stockfish, 100);
-            b.move(move.Substring(9, 4));
-        }
-        
+        move_time = engine_movetime;
     }
 
 
-    string GetMoveFromUCI(Board board, ConsoleUCIInterface engine, int movetime=100) {
+
+    public void GetEngineMove(BoardManager bm) {
+
+        string engine_move = GetMoveFromUCI(bm.board, engine_refrence[bm.board.turn_id], move_time);
+        engine_move = engine_move.Substring(9, 4); // Remove filler text
+
+        UnityEngine.Debug.Log(engine_move);
+
+        bm.board.move(engine_move);
+        bm.MoveGOPieces(engine_move);
+    }
+
+    private string GetMoveFromUCI(Board board, ConsoleUCIInterface engine, int movetime=100) {
         string string_move_list = String.Join(" ", board.move_list);
 
         engine.SendCommand("position startpos moves "+string_move_list, null);
 
         string response = engine.SendCommand("go movetime "+movetime, "bestmove");
-        UnityEngine.Debug.Log(response);
 
         return response;
     }

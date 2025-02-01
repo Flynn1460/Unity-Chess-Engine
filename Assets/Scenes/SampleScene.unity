@@ -5524,6 +5524,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ALLOWED_TIME: 600
+  engine_move_time: 400
+  white_id: 0
+  black_id: 1
 --- !u!1 &871503806
 GameObject:
   m_ObjectHideFlags: 0
@@ -11050,7 +11053,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2060990521}
-  - component: {fileID: 2060990520}
   m_Layer: 0
   m_Name: BoardManager
   m_TagString: Untagged
@@ -11058,18 +11060,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2060990520
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2060990519}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df1848a093542e24cab60a6deabe01f8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &2060990521
 Transform:
   m_ObjectHideFlags: 0

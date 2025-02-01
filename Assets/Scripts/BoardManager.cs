@@ -2,7 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 
@@ -51,6 +50,11 @@ public class Board {
 
     public bool is_wking_moved = false;
     public bool is_bking_moved = false;
+
+    public int white_id = 0;
+    public int black_id = 0;
+    
+    public int turn_id = 0;
 
 
     public void reset_board() {
@@ -102,6 +106,7 @@ public class Board {
         }
     }
 
+
     // MOVEMENT
     public void move(List<int> move, bool flip_turn=true) {  move_root(move, flip_turn);  }
     public void move(string move, bool flip_turn=true) {  move_root(tools.NEW_uci_converter(move), flip_turn);  }
@@ -115,7 +120,12 @@ public class Board {
 
         move_list.Add(tools.uci_converter(move));
 
-        if (flip_turn) turn = !turn;
+        if (flip_turn) {
+            turn = !turn;
+
+            if (turn)  turn_id = white_id;
+            if (!turn) turn_id = black_id;
+        }
     }
 
 
@@ -145,16 +155,71 @@ public class BoardManager
     // Textures
     private Sprite queen_texture = Resources.Load<Sprite>("Chess/wq");
 
+    public List<String> GenerateLegalMoves(List<int> filter_square=null) {
+
+        if (board.turn_id == 0) {
+            return newmoveGenerator.GenerateLegalMoves(board, filter_square:filter_square);
+        }
+        else {
+            return new List<String>();
+        }
+    }
 
 
     public void MovingPiece(string piecePosition) {
-        List<String> piece_legal_moves = newmoveGenerator.GenerateLegalMoves(board, tools.uci_converter(piecePosition));
-        List<String> stripped_moves = tools.strip_moves(piece_legal_moves, false, include_promotion:false); // Get list of moves, ignore promotion data
+        if (board.turn_id == 0) {
+            List<String> piece_legal_moves = newmoveGenerator.GenerateLegalMoves(board, tools.uci_converter(piecePosition));
+            List<String> stripped_moves = tools.strip_moves(piece_legal_moves, false, include_promotion:false); // Get list of moves, ignore promotion data
 
-        boardHighlighter.Highlight_Tiles(stripped_moves);
+            boardHighlighter.Highlight_Tiles(stripped_moves);
+        }
     }
 
     
+    public void MoveGOPieces(string string_move) {
+        List<int> move = tools.uci_converter(string_move);
+        string piece_location = string_move.Substring(0,2);
+        int piece_num = board.b[move[2], move[3]];
+
+        Debug.Log(String.Join(", ", move) + " - " + piece_location + " - " + piece_num);
+
+
+        PIECE_CONTROLLER piece = GameObject.Find(piece_location).GetComponent<PIECE_CONTROLLER>();
+        piece.ExternalMove(new List<int>() {move[3], move[2]});
+
+        // KING CASTLING
+        if (piece_num == 6 || piece_num == 12) {
+            if (string_move == "e1c1") {
+                board.b[0, 0] = 0; //
+                board.b[0, 3] = 2; // PLACE ROOK
+
+                PIECE_CONTROLLER pc = GameObject.Find("a1").GetComponent<PIECE_CONTROLLER>();
+                pc.ExternalMove(new List<int>() {0, 3});
+            }   
+            if (string_move == "e1g1") {
+                board.b[0, 7] = 0; //
+                board.b[0, 5] = 2; // PLACE ROOK
+
+                PIECE_CONTROLLER pc = GameObject.Find("h1").GetComponent<PIECE_CONTROLLER>();
+                pc.ExternalMove(new List<int>() {0, 5});
+            }
+            if (string_move == "e8c8") {
+                board.b[7, 0] = 0; //
+                board.b[7, 3] = 2; // PLACE ROOK
+
+                PIECE_CONTROLLER pc = GameObject.Find("a8").GetComponent<PIECE_CONTROLLER>();
+                pc.ExternalMove(new List<int>() {7, 3});
+            }   
+            if (string_move == "e8g8") {
+                board.b[7, 7] = 0; //
+                board.b[7, 5] = 2; // PLACE ROOK
+
+                PIECE_CONTROLLER pc = GameObject.Find("h8").GetComponent<PIECE_CONTROLLER>();
+                pc.ExternalMove(new List<int>() {7, 5});
+            }
+        }
+    }
+
     public void Push(List<int> old_position, List<int> new_position, int pawn_promote_piece=-1, bool is_enpas=false){
         // If replace piece is set to something make piece otherwise use what was at the position
         int piece = pawn_promote_piece == -1 ? board.b[old_position[0], old_position[1]] : pawn_promote_piece;
