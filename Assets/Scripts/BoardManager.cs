@@ -104,6 +104,7 @@ public class Board {
 
     // MOVEMENT
     public void move(List<int> move, bool flip_turn=true) {  move_root(move, flip_turn);  }
+    public void move(string move, bool flip_turn=true) {  move_root(tools.NEW_uci_converter(move), flip_turn);  }
     public void move(List<int> start_move, List<int> end_move, bool flip_turn=true)  {  move_root(tools.ls_combine(start_move, end_move), flip_turn);  }
 
 

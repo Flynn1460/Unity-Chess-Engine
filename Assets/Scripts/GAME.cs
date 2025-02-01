@@ -10,6 +10,7 @@ public class GAME : MonoBehaviour
 
     public BoardManager board_manager;
     private TEXT_TIMER_CONTROLLER timer_controller;
+    private Piece_Setup piece_Setup;
     private bool turn;
 
     void Awake() {   

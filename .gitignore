@@ -9,6 +9,8 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
+[Aa]ssets/Scripts/ENGINES/ENGINE_Sebastian/
+[Aa]ssets/Scripts/ENGINES/ENGINE_Stockfish/
 
 
 # MemoryCaptures can get excessive in size.
