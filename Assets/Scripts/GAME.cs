@@ -18,6 +18,7 @@ public class GAME : MonoBehaviour
     private Piece_Setup piece_Setup;
     private bool turn;
 
+
     void Awake() {   
         board_manager = new BoardManager();
         gamematcher = new GameMatcher(engine_move_time);

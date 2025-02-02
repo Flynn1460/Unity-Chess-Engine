@@ -5524,9 +5524,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ALLOWED_TIME: 600
-  engine_move_time: 400
+  engine_move_time: 5
   white_id: 0
-  black_id: 1
+  black_id: 0
 --- !u!1 &871503806
 GameObject:
   m_ObjectHideFlags: 0
