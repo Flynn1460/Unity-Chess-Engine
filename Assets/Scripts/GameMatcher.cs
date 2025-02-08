@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Collections.Generic;
+using ENGINE_NAMESPACE_Random;
 
 
 public class ConsoleUCIInterface
@@ -98,15 +99,63 @@ public class ConsoleUCIInterface
 }
 
 
+public class CustomEngineInterface {
+    private bool IS_ENGINE_UCI = false;
+
+    private ConsoleUCIInterface uci_engine;
+    private object engine_class;
+
+    public CustomEngineInterface(Type engine_class_name) {
+        IS_ENGINE_UCI = false;
+        engine_class = Activator.CreateInstance(engine_class_name);
+    }
+
+    public CustomEngineInterface(String engine_path_) {
+        IS_ENGINE_UCI = true;
+        uci_engine = new ConsoleUCIInterface(engine_path_);
+    }
+
+    public String GetMoveFromEngine(Board b, int movetime=100) {
+        if (uci_engine != null) {
+            string raw_engine_move = uci_engine.GetMoveFromEngine(b, movetime);
+            return raw_engine_move.Substring(9, 4);
+        }
+
+        else {
+            // Assuming GET_MOVE is a method of the object type and takes two parameters (Board, int)
+            var methodInfo = engine_class.GetType().GetMethod("GET_MOVE");
+            
+            if (methodInfo != null)
+            {
+                // Invoke the method on the engine_class instance using reflection
+                var result = methodInfo.Invoke(engine_class, new object[] { b, movetime });
+                
+                // Assuming the method returns a string
+                return (string)result;
+            }
+            else {
+                UnityEngine.Debug.Log("you fucking suck at coding");
+                return "";
+            }
+        }
+    }
+}
+
+
+
 public class GameMatcher
 {
-    private ConsoleUCIInterface ENGINE_stockfish = new ConsoleUCIInterface(@"C:/Users/flynn/OneDrive/Dokumentumok/Programming/Unity Projects/Chess Programming/Assets/Scripts/ENGINES/ENGINE_Stockfish/stockfish/stockfish.exe");
+    private CustomEngineInterface ENGINE_OBJ_stockfish = new CustomEngineInterface(@"C:/Users/flynn/OneDrive/Dokumentumok/Programming/Unity Projects/Chess Programming/Assets/Scripts/ENGINES/ENGINE_Stockfish/stockfish/stockfish.exe");
+    private CustomEngineInterface ENGINE_OBJ_Random = new CustomEngineInterface(typeof(ENGINE_Random));
 
-    private Dictionary<int, ConsoleUCIInterface> engine_refrence = new Dictionary<int, ConsoleUCIInterface>();
+
+    private Dictionary<int, CustomEngineInterface> engine_refrence = new Dictionary<int, CustomEngineInterface>();
     private int move_time;
 
     public GameMatcher(int engine_movetime) {
-        engine_refrence.Add(1, ENGINE_stockfish);
+        engine_refrence.Add(1, ENGINE_OBJ_stockfish);
+        engine_refrence.Add(2, ENGINE_OBJ_Random);
+
         move_time = engine_movetime;
     }
 
@@ -115,10 +164,9 @@ public class GameMatcher
 
         // Convert Raw Stockfish move into a move object to be read into the board
 
-        ConsoleUCIInterface current_engine = engine_refrence[bm.board.turn_id];
+        CustomEngineInterface current_engine = engine_refrence[bm.board.turn_id];
 
         string raw_engine_move = current_engine.GetMoveFromEngine(bm.board, move_time);
-        raw_engine_move = raw_engine_move.Substring(9, 4);
 
         Move engine_move = new Move(bm.board, raw_engine_move); 
 
