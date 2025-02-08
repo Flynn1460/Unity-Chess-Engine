@@ -35,7 +35,7 @@ public class GAME : MonoBehaviour
     }
 
     void Start() {
-        turn = board_manager.board.turn;
+        turn = !board_manager.board.turn;
         
         // Setup controllers
         timer_controller = FindFirstObjectByType<CONTROLLER_Timer>(); 
@@ -61,19 +61,22 @@ public class GAME : MonoBehaviour
 
             piece_setup.ClearPieces();
             piece_setup.SetupPieces(board_manager.board.b);
+
+
+            // ===== Handle ID =====
+            // If ID is 0 it will be handled by BoardManager Automatically
+            // If ID is >1 then its an engine to be dealt with by the game matcher
+
+            if (board_manager.board.turn_id > 0) {
+                gamematcher.GetEngineMove(board_manager);
+            }
         }
+
+
 
         if (board_manager.board.is_checkmate || timer_controller.IS_TIMEOUT) {
             GameOver();
         }
-
-        // ===== Handle ID =====
-        // If ID is 0 it will be handled by BoardManager Automatically
-        // If ID is >1 then its an engine to be dealt with by the game matcher
-        if (board_manager.board.turn_id > 0) {
-            gamematcher.GetEngineMove(board_manager);
-        }
-
     }
 
     void GameOver() {

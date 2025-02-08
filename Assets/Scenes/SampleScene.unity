@@ -5525,10 +5525,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ALLOWED_TIME: 600
-  engine_move_time: 5
-  white_id: 0
-  black_id: 0
-  board_fen: r1bq2r1/b4pk1/p1pp1p2/1p2pP2/1P2P1PB/3P4/1PPQ2P1/R3K2R w
+  engine_move_time: 100
+  white_id: 1
+  black_id: 2
+  board_fen: start
 --- !u!114 &867577149
 MonoBehaviour:
   m_ObjectHideFlags: 0

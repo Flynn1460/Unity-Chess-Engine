@@ -92,6 +92,7 @@ public class ConsoleUCIInterface
         string string_move_list = String.Join(" ", board.move_list);
 
         SendCommand("position fen "+board.SetupFen+" moves "+string_move_list, null);
+        UnityEngine.Debug.Log("position fen "+board.SetupFen+" moves "+string_move_list);
         string response = SendCommand("go movetime "+movetime, "bestmove");
 
         return response;
@@ -145,12 +146,13 @@ public class CustomEngineInterface {
 
 public class GameMatcher
 {
+    private Dictionary<int, CustomEngineInterface> engine_refrence = new Dictionary<int, CustomEngineInterface>();
+    private int move_time;
+
+
     private CustomEngineInterface ENGINE_OBJ_stockfish = new CustomEngineInterface(@"C:/Users/flynn/OneDrive/Dokumentumok/Programming/Unity Projects/Chess Programming/Assets/Scripts/ENGINES/ENGINE_Stockfish/stockfish/stockfish.exe");
     private CustomEngineInterface ENGINE_OBJ_Random = new CustomEngineInterface(typeof(ENGINE_Random));
 
-
-    private Dictionary<int, CustomEngineInterface> engine_refrence = new Dictionary<int, CustomEngineInterface>();
-    private int move_time;
 
     public GameMatcher(int engine_movetime) {
         engine_refrence.Add(1, ENGINE_OBJ_stockfish);
@@ -162,18 +164,15 @@ public class GameMatcher
 
     public void GetEngineMove(BoardManager bm) {
 
-        // Convert Raw Stockfish move into a move object to be read into the board
+        // Convert Raw Engine Move move into a move object to be read into the board
 
         CustomEngineInterface current_engine = engine_refrence[bm.board.turn_id];
-
         string raw_engine_move = current_engine.GetMoveFromEngine(bm.board, move_time);
 
         Move engine_move = new Move(bm.board, raw_engine_move); 
 
-
-        // Print Stockfish Move
-        UnityEngine.Debug.Log(engine_move);
-
+        // Print Engine Move
+        UnityEngine.Debug.Log("ENGINE ID : "+bm.board.turn_id+ ", "+engine_move);
         bm.board.move(engine_move);
     }    
 }
