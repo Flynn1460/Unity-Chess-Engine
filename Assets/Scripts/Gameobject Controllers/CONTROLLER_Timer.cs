@@ -6,7 +6,7 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class TEXT_TIMER_CONTROLLER : MonoBehaviour
+public class CONTROLLER_Timer : MonoBehaviour
 {
     private TextMeshProUGUI white_timer;
     private TextMeshProUGUI black_timer;
@@ -72,7 +72,7 @@ public class TEXT_TIMER_CONTROLLER : MonoBehaviour
         BLACK_TIME = new_time;
     }
 
-    public void flip_colours(bool turn) {
+    public void flip_turn(bool turn) {
         if (turn) {
             white_timer.color = TURN_COLOUR;
             black_timer.color = NOT_TURN_COLOUR;

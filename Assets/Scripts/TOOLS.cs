@@ -2,8 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
+[Obsolete("DEPRECATED")]
 public class TOOLS
 {
     public List<int> uci_converter(String uci_string) {
@@ -100,7 +100,6 @@ public class TOOLS
             return (rank+1).ToString() + (char)('a' + file) + (rank2+1).ToString() + (char)('a' + file2);
     }
 
-
     public List<String> strip_moves(List<string> moves, bool stripFRONTorBACK, bool include_promotion=true) {
         List<String> newMoves = new List<string>();
 
@@ -113,7 +112,6 @@ public class TOOLS
 
         return newMoves;
     }
-
 
     public int[,] cpy_board(int[,] board) {
         int rows = board.GetLength(0);

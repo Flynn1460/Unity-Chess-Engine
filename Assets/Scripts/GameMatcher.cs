@@ -1,22 +1,22 @@
+#pragma warning disable CS0219
+
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using UnityEngine;
 using System.Collections.Generic;
-using UnityEditor.UIElements;
 
 
 public class ConsoleUCIInterface
 {
     private Process engine;
     private StreamWriter engine_input;
-    private Thread engine_thread;
     private Queue<string> response_queue = new Queue<string>();
 
     private string engine_path = "";
 
 
+    // Wierd Process Things
     private void SetupEngine() {
         engine = new Process
         {
@@ -74,12 +74,12 @@ public class ConsoleUCIInterface
     }
 
 
-
     public ConsoleUCIInterface(string engine_path_) {
         engine_path = engine_path_;
 
         Engine();
     }
+
 
     void Engine() {
         SetupEngine();
@@ -87,48 +87,45 @@ public class ConsoleUCIInterface
         SendCommand("uci", "uciok");
     }
 
+    public string GetMoveFromEngine(Board board, int movetime=100) {
+        string string_move_list = String.Join(" ", board.move_list);
+
+        SendCommand("position fen "+board.SetupFen+" moves "+string_move_list, null);
+        string response = SendCommand("go movetime "+movetime, "bestmove");
+
+        return response;
+    }
 }
 
 
 public class GameMatcher
 {
-    private ConsoleUCIInterface ENGINE_stockfish;
-    private TOOLS tools;
+    private ConsoleUCIInterface ENGINE_stockfish = new ConsoleUCIInterface(@"C:/Users/flynn/OneDrive/Dokumentumok/Programming/Unity Projects/Chess Programming/Assets/Scripts/ENGINES/ENGINE_Stockfish/stockfish/stockfish.exe");
 
-    private Dictionary<int, ConsoleUCIInterface> engine_refrence;
-    private string move;
+    private Dictionary<int, ConsoleUCIInterface> engine_refrence = new Dictionary<int, ConsoleUCIInterface>();
     private int move_time;
 
     public GameMatcher(int engine_movetime) {
-        tools = new TOOLS();
-        engine_refrence = new Dictionary<int, ConsoleUCIInterface>();
-
-        ENGINE_stockfish = new ConsoleUCIInterface(@"C:/Users/flynn/OneDrive/Dokumentumok/Programming/Unity Projects/Chess Programming/Assets/Scripts/ENGINES/ENGINE_Stockfish/stockfish/stockfish.exe");
-        engine_refrence.Add(1, ENGINE_stockfish);    
-
+        engine_refrence.Add(1, ENGINE_stockfish);
         move_time = engine_movetime;
     }
 
 
-
     public void GetEngineMove(BoardManager bm) {
 
-        string engine_move = GetMoveFromUCI(bm.board, engine_refrence[bm.board.turn_id], move_time);
-        engine_move = engine_move.Substring(9, 4); // Remove filler text
+        // Convert Raw Stockfish move into a move object to be read into the board
 
+        ConsoleUCIInterface current_engine = engine_refrence[bm.board.turn_id];
+
+        string raw_engine_move = current_engine.GetMoveFromEngine(bm.board, move_time);
+        raw_engine_move = raw_engine_move.Substring(9, 4);
+
+        Move engine_move = new Move(bm.board, raw_engine_move); 
+
+
+        // Print Stockfish Move
         UnityEngine.Debug.Log(engine_move);
 
         bm.board.move(engine_move);
-        bm.MoveGOPieces(engine_move);
-    }
-
-    private string GetMoveFromUCI(Board board, ConsoleUCIInterface engine, int movetime=100) {
-        string string_move_list = String.Join(" ", board.move_list);
-
-        engine.SendCommand("position startpos moves "+string_move_list, null);
-
-        string response = engine.SendCommand("go movetime "+movetime, "bestmove");
-
-        return response;
-    }
+    }    
 }

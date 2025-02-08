@@ -188,7 +188,7 @@ public class MoveGenerator
         if (board.move_list.Count == 0) return legal_move_list;
 
         // Last move
-        String lastMove = board.move_list[board.move_list.Count - 1];
+        String lastMove = (board.move_list[board.move_list.Count - 1]).str_uci();
         List<int> lastMoveCoords = tools.uci_converter(lastMove);
         int lastMoveStartRow = lastMoveCoords[1];
         int lastMoveEndRow = lastMoveCoords[3];

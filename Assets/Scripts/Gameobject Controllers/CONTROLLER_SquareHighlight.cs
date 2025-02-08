@@ -5,9 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class BoardHighlighter
+public class CONTROLLER_SquareHighlight
 {   
-    private TOOLS tools = new TOOLS();
     private Transform WHITE_TILE_TRA = GameObject.Find("WHITE_TILES").transform;
     private Transform BLACK_TILE_TRA = GameObject.Find("BLACK_TILES").transform;
 
@@ -18,7 +17,7 @@ public class BoardHighlighter
     List<GameObject> white_tiles = new List<GameObject>();
     List<GameObject> black_tiles = new List<GameObject>();
     
-    public BoardHighlighter() {
+    public CONTROLLER_SquareHighlight() {
         // SETUP STARTING COLOURS
         Transform white_test_child = WHITE_TILE_TRA.GetChild(0);
         Transform black_test_child = BLACK_TILE_TRA.GetChild(0);
