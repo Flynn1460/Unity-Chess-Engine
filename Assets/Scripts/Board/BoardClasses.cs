@@ -58,6 +58,14 @@ public class Move
     public Square start_square;
     public Square end_square;
 
+    public bool isEnpassant = false;
+
+    public bool is_castle_white_short = false;
+    public bool is_castle_white_long = false;
+    public bool is_castle_black_short = false;
+    public bool is_castle_black_long = false;
+    
+
     // DECLARATIONS
     public Move(Board board, int col1, int row1, int col2, int row2) {
         
@@ -201,6 +209,28 @@ public class Board{
 
     public void reset_board() {  b = EMPTY_BOARD;  }
 
+    public Board copy() {
+        Board board_cpy = new Board();
+
+        board_cpy.turn = turn;
+        board_cpy.is_checkmate = is_checkmate;
+        board_cpy.is_gameover = is_gameover;
+        board_cpy.is_a1_rook_moved = is_a1_rook_moved;
+        board_cpy.is_a8_rook_moved = is_a8_rook_moved;
+        board_cpy.is_h1_rook_moved = is_h1_rook_moved;
+        board_cpy.is_h8_rook_moved = is_h8_rook_moved;
+        board_cpy.is_wking_moved = is_wking_moved;
+        board_cpy.is_bking_moved = is_bking_moved;
+        board_cpy.white_id = white_id;
+        board_cpy.black_id = black_id;
+        board_cpy.turn_id = turn_id;
+        board_cpy.SetupFen = SetupFen;
+
+        board_cpy.b = (int[,])b.Clone();
+        board_cpy.move_list = new List<Move>(move_list);
+        
+        return board_cpy;
+    }
 
     // MOVEMENT
     public void move(Move move, bool flip_turn=true) {
@@ -216,6 +246,22 @@ public class Board{
 
             if (turn)  turn_id = white_id;
             if (!turn) turn_id = black_id;
+        }
+
+        if (move.isEnpassant) {
+
+        }
+        if (move.is_castle_white_short) {
+
+        }
+        if (move.is_castle_white_long) {
+            
+        }
+        if (move.is_castle_black_short) {
+            
+        }
+        if (move.is_castle_black_long) {
+            
         }
     }
 }

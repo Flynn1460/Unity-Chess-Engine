@@ -73,7 +73,6 @@ public class GAME : MonoBehaviour
         }
 
 
-
         if (board_manager.board.is_checkmate || timer_controller.IS_TIMEOUT) {
             GameOver();
         }

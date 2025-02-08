@@ -92,7 +92,6 @@ public class ConsoleUCIInterface
         string string_move_list = String.Join(" ", board.move_list);
 
         SendCommand("position fen "+board.SetupFen+" moves "+string_move_list, null);
-        UnityEngine.Debug.Log("position fen "+board.SetupFen+" moves "+string_move_list);
         string response = SendCommand("go movetime "+movetime, "bestmove");
 
         return response;
@@ -135,7 +134,7 @@ public class CustomEngineInterface {
                 return (string)result;
             }
             else {
-                UnityEngine.Debug.Log("you fucking suck at coding");
+                UnityEngine.Debug.LogWarning("Engine GET_MOVE function missing for " + engine_class.GetType().Name);
                 return "";
             }
         }
@@ -172,7 +171,7 @@ public class GameMatcher
         Move engine_move = new Move(bm.board, raw_engine_move); 
 
         // Print Engine Move
-        UnityEngine.Debug.Log("ENGINE ID : "+bm.board.turn_id+ ", "+engine_move);
+        //UnityEngine.Debug.Log("ENGINE ID : "+bm.board.turn_id+ ", "+engine_move);
         bm.board.move(engine_move);
     }    
 }

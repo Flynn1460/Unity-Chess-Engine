@@ -30,14 +30,12 @@ public class MoveGenerator
 
         if (!check_search) {
             int[,] board_ = tools.cpy_board(board.b);
-            int old_pos_piece = 0;
 
             List<String> removed_moves = new List<String>();
 
             foreach (String move_ in legal_moves) {
                 List<int> move = tools.uci_converter(move_);
 
-                old_pos_piece = board_[move[3], move[2]];
                 board_[move[3], move[2]] = board_[move[1], move[0]];
                 board_[move[1], move[0]] = 0;
 
@@ -54,34 +52,31 @@ public class MoveGenerator
         return legal_moves;
     }
 
-    public bool isCheckmate(Board board) {
+    public bool isCheckmate(Board board_) {
         /*
         Check for all moves for whoevers turn it is can white checkmate you
         */
-        int[,] board_ = tools.cpy_board(board.b);
-        int old_pos_piece = 0;
-
+        Board board = board_.copy();
         List<String> playable_moves = GenerateLegalMoves(board);
 
         int number_of_total_moves = playable_moves.Count;
         int number_of_safe_moves = 0;
 
         foreach(String playable_move in playable_moves) {
-            List<int> move = tools.uci_converter(playable_move);
-            
-            old_pos_piece = board_[move[3], move[2]];
-            board_[move[3], move[2]] = board_[move[1], move[0]];
-            board_[move[1], move[0]] = 0;
+            Move move_ = new Move(board, playable_move);
+            board.move(move_);
+
 
             if (!isCheck(board)) {
                 number_of_safe_moves += 1;
             }
 
-            board_ = tools.cpy_board(board.b);
+            board = board_.copy();
         }
 
         if (number_of_safe_moves == 0) {
             Debug.Log("Checkmate");
+            return true;
         }
 
         return false;
@@ -91,7 +86,7 @@ public class MoveGenerator
         List<String> playable_moves = GenerateLegalMoves(board, check_search:true);
 
         // King Pos Calc        
-        int king_piece = board.turn ? 6 : 13;
+        int king_piece = board.turn ? 13 : 6;
         List<int> king_location = board.find_piece_location(king_piece);
 
         bool is_in_check = false;

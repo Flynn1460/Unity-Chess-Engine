@@ -36,7 +36,7 @@ public class BoardManager : TOOLS
         }
     }
 
-    public void Push(Move piece_move, int pawn_promote_piece=-1, bool is_enpas=false){
+    public void Push(Move piece_move, int pawn_promote_piece=-1){
         List<int> old_position = piece_move.start_square.sq;
         List<int> new_position = piece_move.end_square.sq;
         // If replace piece is set to something make piece otherwise use what was at the position
