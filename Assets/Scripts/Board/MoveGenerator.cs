@@ -29,21 +29,20 @@ public class MoveGenerator
         }
 
         if (!check_search) {
-            int[,] board_ = tools.cpy_board(board.b);
+            Board board_ = board.copy();
 
             List<String> removed_moves = new List<String>();
 
             foreach (String move_ in legal_moves) {
-                List<int> move = tools.uci_converter(move_);
+                Move move = new Move(board_, move_);
 
-                board_[move[3], move[2]] = board_[move[1], move[0]];
-                board_[move[1], move[0]] = 0;
+                board_.move(move);
 
-                if (isCheck(board)) {
+                if (isCheck(board_)) {
                     removed_moves.Add(move_);
                 }
 
-                board_ = tools.cpy_board(board.b);
+                board_ = board.copy();
             }
 
             legal_moves = legal_moves.Except(removed_moves).ToList();
