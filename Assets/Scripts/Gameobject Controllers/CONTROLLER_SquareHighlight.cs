@@ -28,22 +28,26 @@ public class CONTROLLER_SquareHighlight
 
 
 
-    public void Highlight_Tiles(List<String> uci_string_list) {
+    public void Highlight_Tiles(List<Move> highlight_moves) {
         Reset_Tiles();
 
         white_tiles = new List<GameObject>();
         black_tiles = new List<GameObject>();
 
-        foreach (String uci_string in uci_string_list) {
+        foreach (Move move in highlight_moves) {
             foreach(Transform child in WHITE_TILE_TRA) {
-                if ((char.ToUpper(uci_string[0])+uci_string.Substring(1)) == child.name) {
+
+                if (move.end_square.str_uci().ToUpper() == child.name) {
                     white_tiles.Add(child.gameObject);
                 }
+
             }
             foreach(Transform child in BLACK_TILE_TRA) {
-                if ((char.ToUpper(uci_string[0])+uci_string.Substring(1)) == child.name) {
+
+                if (move.end_square.str_uci().ToUpper() == child.name) {
                     black_tiles.Add(child.gameObject);
                 }
+
             }
         }
 

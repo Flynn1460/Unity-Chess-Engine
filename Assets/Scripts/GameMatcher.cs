@@ -100,18 +100,14 @@ public class ConsoleUCIInterface
 
 
 public class CustomEngineInterface {
-    private bool IS_ENGINE_UCI = false;
-
     private ConsoleUCIInterface uci_engine;
     private object engine_class;
 
     public CustomEngineInterface(Type engine_class_name) {
-        IS_ENGINE_UCI = false;
         engine_class = Activator.CreateInstance(engine_class_name);
     }
 
     public CustomEngineInterface(String engine_path_) {
-        IS_ENGINE_UCI = true;
         uci_engine = new ConsoleUCIInterface(engine_path_);
     }
 

@@ -1,7 +1,4 @@
-
-using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace ENGINE_NAMESPACE_Random {
 
@@ -12,15 +9,12 @@ public class Random_Engine {
 
 
     public Move Get_Random_Move(Board board, int movetime) {
-        List<String> legal_moves = move_generator.GenerateLegalMoves(board);
+        List<Move> legal_moves = move_generator.GenerateLegalMoves(board);
 
         int random_index = random.Next(legal_moves.Count);
-        String random_move = legal_moves[random_index];
+        Move random_move = legal_moves[random_index];
 
-
-        Move move = new Move(board, random_move);
-
-        return move;
+        return random_move;
     }
 }
 }

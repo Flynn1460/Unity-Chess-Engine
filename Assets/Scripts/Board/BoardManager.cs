@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BoardManager : TOOLS
+public class BoardManager
 {
     // Classes
     public Board board = new Board();
@@ -16,23 +16,20 @@ public class BoardManager : TOOLS
     private Sprite queen_texture = Resources.Load<Sprite>("Chess/wq");
 
 
-    public List<String> GenerateLegalMoves(Square filter_square=null) {
+    public List<Move> GenerateLegalMoves(Square filter_square=null) {
         if (board.turn_id == 0) {
-            List<int> new_filter_square = new List<int>() {filter_square.col, filter_square.row};
-            return move_generator.GenerateLegalMoves(board, filter_square:new_filter_square);
+            return move_generator.GenerateLegalMoves(board, filter_square);
         }
-        else {
-            return new List<String>();
-        }
+
+        return new List<Move>();
     }
 
 
     public void Highlight_Piece_Moves(Square piece_square) {
         if (board.turn_id == 0) {
-            List<String> piece_legal_moves = move_generator.GenerateLegalMoves(board, piece_square.sq);
-            List<String> stripped_moves = strip_moves(piece_legal_moves, false, include_promotion:false); // Get list of moves, ignore promotion data
+            List<Move> piece_legal_moves = move_generator.GenerateLegalMoves(board, piece_square);
 
-            boardHighlighter.Highlight_Tiles(stripped_moves);
+            boardHighlighter.Highlight_Tiles(piece_legal_moves);
         }
     }
 

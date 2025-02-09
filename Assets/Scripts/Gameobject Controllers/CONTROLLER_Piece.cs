@@ -6,7 +6,6 @@ public class CONTROLLER_Piece : MonoBehaviour
 {
     // OTHER SCRIPTS
     private BoardManager bm;
-    private TOOLS tools;
 
     // SERIALIZED FIELDS
     [Header("Pawn Promotional Textures")]
@@ -26,7 +25,6 @@ public class CONTROLLER_Piece : MonoBehaviour
     // START & UPDATE UNITY FUNCTIONS
     private void Start() {
         bm = FindFirstObjectByType<GAME>().board_manager; // Get Game board
-        tools = new TOOLS();
     }
 
     private void Update() {
@@ -100,20 +98,15 @@ public class CONTROLLER_Piece : MonoBehaviour
 
 
     public int DroppedPiece(Move piece_move) {
-        List<String> piece_legal_moves = bm.GenerateLegalMoves(filter_square:piece_move.start_square);
-        List<String> stripped_moves = tools.strip_moves(piece_legal_moves, false);
+        List<Move> piece_legal_moves = bm.GenerateLegalMoves(filter_square:piece_move.start_square);
 
-        if (stripped_moves.Contains(piece_move.end_square.ToString())) {
-            bm.Push(piece_move);
-            return 1;
+        foreach(Move move in piece_legal_moves) {
+            if (move.str_uci() == piece_move.str_uci()) {
+                bm.Push(piece_move);
+                return 1;
+            }
         }
 
-        else if (stripped_moves.Contains(piece_move.end_square.ToString() + "=Q")) {
-            bm.Push(piece_move, pawn_promote_piece: 5+(7*PIECE_COLOUR));
-            GetComponent<SpriteRenderer>().sprite = QUEEN_TEXTURE;
-            return 1;
-        }
-
-        else return 0;
+        return 0;
     }
 }
