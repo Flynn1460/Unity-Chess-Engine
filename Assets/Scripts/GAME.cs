@@ -79,6 +79,7 @@ public class GAME : MonoBehaviour
     }
 
     void GameOver() {
+        Debug.Log("CHECKMATE");
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

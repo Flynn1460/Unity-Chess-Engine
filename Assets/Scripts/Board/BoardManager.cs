@@ -39,18 +39,12 @@ public class BoardManager
         // If replace piece is set to something make piece otherwise use what was at the position
         int piece = pawn_promote_piece == -1 ? board.b[old_position[0], old_position[1]] : pawn_promote_piece;
 
-        board.move(piece_move);
-
         if (piece == 1 && new_position[0] == 7) board.b[new_position[0], new_position[1]] = 5; // WHITE QUEEN PROMO
         if (piece == 8 && new_position[0] == 0) board.b[new_position[0], new_position[1]] = 12; // BLACK QUEEN PROMO
 
-        
         // If move is pushed then highlighting isn't needed
         boardHighlighter.Reset_Tiles();
 
-        // CHECKMATE
-        if (move_generator.isCheckmate(board)) {
-            board.is_checkmate = true;
-        }
+        board.move(piece_move, definate_move:true);
     } 
 }

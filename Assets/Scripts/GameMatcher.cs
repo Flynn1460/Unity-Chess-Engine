@@ -167,7 +167,6 @@ public class GameMatcher
         Move engine_move = new Move(bm.board, raw_engine_move); 
 
         // Print Engine Move
-        //UnityEngine.Debug.Log("ENGINE ID : "+bm.board.turn_id+ ", "+engine_move);
-        bm.board.move(engine_move);
+        bm.board.move(engine_move, definate_move:true);
     }    
 }

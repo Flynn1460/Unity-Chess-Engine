@@ -10,7 +10,6 @@ public class MoveGenerator
 {
     public List<Move> GenerateLegalMoves(Board board, Square filter_square=null, bool check_search=false) {
         List<Move> legal_moves = new List<Move>();
-
         List<Square> piece_squares_for_turn = GetFriendlySquares(board);
 
         foreach(Square piece_square in piece_squares_for_turn) {
@@ -27,8 +26,10 @@ public class MoveGenerator
             }
         }
 
-        List<Move> discarded_legal_moves = getDiscardedMoves(board, legal_moves, check_search);
-        legal_moves.Except(discarded_legal_moves).ToList();
+        //List<Move> discarded_legal_moves = getDiscardedMoves(board, legal_moves, check_search);
+        //legal_moves.Except(discarded_legal_moves).ToList();
+
+        legal_moves = getDiscardedMoves(board, legal_moves, check_search);
 
         return legal_moves;
     }
@@ -36,9 +37,8 @@ public class MoveGenerator
     // CHECK AND CHECKMATE
 
     public bool isCheckmate(Board board_) {
-        /*
-        Check for all moves for whoevers turn it is can white checkmate you
-        */
+        // Check for all moves for whoevers turn it is can white checkmate you
+
         Board board = board_.copy();
         List<Move> playable_moves = GenerateLegalMoves(board);
 
@@ -54,10 +54,10 @@ public class MoveGenerator
             board = board_.copy();
         }
 
-        if (number_of_safe_moves == -1) {
-            Debug.Log("Checkmate");
+        if (number_of_safe_moves == 0) {
             return true;
         }
+
         return false;
     }
 
@@ -71,7 +71,6 @@ public class MoveGenerator
         foreach(Move playable_move in playable_moves) {
             if (playable_move.end_square.str_uci() == king_location.str_uci()) {
                 is_in_check = true;
-                Debug.Log(String.Join(" ", board.move_list));
             }
         }
         return is_in_check;
@@ -83,15 +82,18 @@ public class MoveGenerator
         if (!check_search) {
             Board board = board_.copy();
 
-            foreach (Move move in legal_moves) {
-                //Debug.Log(move);
-                board.move(move);
-                if (isCheck(board)) removed_moves.Add(move);
+            foreach (Move move_ in legal_moves) {
+                board.move(move_);
+
+                if (isCheck(board)) {
+                    removed_moves.Add(move_);
+                }
+
                 board = board_.copy();
             }
-        }
 
-        return removed_moves;
+        }
+        return legal_moves.Except(removed_moves).ToList();
     }
 
 
@@ -174,27 +176,27 @@ public class MoveGenerator
         // DIAGONAL MOVES
         foreach(Move diagonal_move in new Move[] {l_diagonal_move, r_diagonal_move}) {
 
-            if (IsInBounds(l_diagonal_move)) {
-                int captured_piece = l_diagonal_move.end_square.piece;
+            if (IsInBounds(diagonal_move)) {
+                int captured_piece = diagonal_move.end_square.piece;
 
                 if (captured_piece != 0 && !IsFriendlyPiece(captured_piece, piece_square.isWhite)) {
 
                     // Add end square and promotion if needed
-                    if (l_diagonal_move.end_square.row%7 == 0) {
-                        l_diagonal_move.promote = 2; // Promote to Rook
-                        legal_move_list.Add(l_diagonal_move);
+                    if (diagonal_move.end_square.row%7 == 0) {
+                        diagonal_move.promote = 2; // Promote to Rook
+                        legal_move_list.Add(diagonal_move);
 
-                        l_diagonal_move.promote = 3; // Promote to Bishop
-                        legal_move_list.Add(l_diagonal_move);
+                        diagonal_move.promote = 3; // Promote to Bishop
+                        legal_move_list.Add(diagonal_move);
 
-                        l_diagonal_move.promote = 4; // Promote to Knight
-                        legal_move_list.Add(l_diagonal_move);
+                        diagonal_move.promote = 4; // Promote to Knight
+                        legal_move_list.Add(diagonal_move);
 
-                        l_diagonal_move.promote = 5; // Promote to Queen
-                        legal_move_list.Add(l_diagonal_move);
+                        diagonal_move.promote = 5; // Promote to Queen
+                        legal_move_list.Add(diagonal_move);
                     }
                     else {
-                        legal_move_list.Add(l_diagonal_move);
+                        legal_move_list.Add(diagonal_move);
                     }
 
                 }
@@ -297,10 +299,9 @@ public class MoveGenerator
         List<Move> legal_move_list = new List<Move>();
 
         int[][] move_pattern = new[] {
-            new[] { -1, -1 }, new[] { 0, 1 },
-            new[] { -1, 0 }, new[] { 1, -1 },
-            new[] { 1, 0 }, new[] { 1, 0 },
-            new[] { 0, -1 }, new[] { 1, 1 }
+            new[] { -1, -1 }, new[] { -1, 0 }, new[] { -1, 1},
+            new[] {  0, -1 },                  new[] {  0, 1},
+            new[] {  1, -1 }, new[] {  1, 0 }, new[] {  1, 1},
         };
 
         foreach (int[] move in move_pattern) {

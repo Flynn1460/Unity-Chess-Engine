@@ -198,6 +198,8 @@ public class Board{
 
     public string SetupFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+    private MoveGenerator move_generator = new MoveGenerator();
+
 
     public void set_fen(string FEN) {
         SetupFen = FEN;
@@ -285,7 +287,7 @@ public class Board{
     }
 
     // MOVEMENT
-    public void move(Move mv, bool flip_turn=true) {
+    public void move(Move mv, bool flip_turn=true, bool definate_move=false) {
         // File, Rank, File, Rank
         b[mv.end_square.row, mv.end_square.col] = b[mv.start_square.row, mv.start_square.col];
         b[mv.start_square.row, mv.start_square.col] = 0;
@@ -337,6 +339,10 @@ public class Board{
             Move mv_ = new Move(this, "a8d8");
             Debug.Log(mv_);
             move(mv_, false);
+        }
+
+        if (definate_move && move_generator.isCheckmate(this)) {
+            is_checkmate = true;
         }
     }
 }

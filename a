@@ -1,0 +1,89 @@
+[33mcommit ede053a1f9f973510b04c738cf730cc1901638aa[m[33m ([m[1;36mHEAD[m[33m)[m
+Author: Flynn1460 <flynngraham101@gmail.com>
+Date:   Sun Feb 9 12:05:04 2025 +0000
+
+    Check Handling Fixed
+
+[33mcommit 4bf4d70eab83e07175b62d655983d9a34c91807f[m
+Author: Flynn1460 <flynngraham101@gmail.com>
+Date:   Sat Feb 8 13:36:53 2025 +0000
+
+    Checkmates Fixed
+
+[33mcommit 26e829749eede8a238daafb383b94d9240912c9d[m
+Author: Flynn1460 <flynngraham101@gmail.com>
+Date:   Sat Feb 8 12:43:52 2025 +0000
+
+    Minor Engine Bug Fixes
+
+[33mcommit 0327be24fac616dd178391f4d5ee6f559739d396[m
+Author: Flynn1460 <flynngraham101@gmail.com>
+Date:   Sat Feb 8 12:22:50 2025 +0000
+
+    Custom Random Engine
+
+[33mcommit 6446f1c62e048e3d653b1c046ae39f6d282ff67b[m
+Author: Flynn1460 <flynngraham101@gmail.com>
+Date:   Sat Feb 8 11:37:21 2025 +0000
+
+    Class Implementation and Huge Optimization, Stable Build.
+
+[33mcommit f51f009baf4eb0ada145c6b367d3e56a8ca89ab2[m
+Author: Flynn1460 <flynngraham101@gmail.com>
+Date:   Sun Feb 2 16:50:25 2025 +0000
+
+    Start of Move, Square class impl
+
+[33mcommit bf893f9e8c24a7dca4487f7c6862e031ed5aa5a0[m
+Author: Flynn1460 <flynngraham101@gmail.com>
+Date:   Sat Feb 1 17:08:33 2025 +0000
+
+    Engine vs Player (very buggy)
+
+[33mcommit b24ae1e6f8d89efa25e8727c42e5b1c4b94b145f[m
+Author: Flynn1460 <flynngraham101@gmail.com>
+Date:   Sat Feb 1 15:40:18 2025 +0000
+
+    Stockfish Engine
+
+[33mcommit 168da48f8bc34c15190701f4111b481098517201[m
+Author: Flynn1460 <flynngraham101@gmail.com>
+Date:   Mon Jan 27 15:31:19 2025 +0000
+
+    Board class
+
+[33mcommit a0a4bf594c59a99d7929a720d5fcb87018f131c9[m
+Author: Flynn1460 <flynngraham101@gmail.com>
+Date:   Mon Jan 27 09:51:26 2025 +0000
+
+    Checks, pins, blocks
+
+[33mcommit 403009380b6d81d08f4519c3a511d5215f06481c[m
+Author: Flynn1460 <flynngraham101@gmail.com>
+Date:   Mon Jan 27 09:28:40 2025 +0000
+
+    Checkmate Working
+
+[33mcommit c549eacfca71de3bd51797d9d9ee7b146684fdb5[m
+Author: Flynn1460 <flynngraham101@gmail.com>
+Date:   Sun Jan 26 21:20:06 2025 +0000
+
+    New PC shift
+
+[33mcommit 06aec9cef08cd4247b6d4c62fd02e090d7c2e987[m
+Author: Flynn <flynngraham101@gmail.com>
+Date:   Sat Jan 18 22:36:20 2025 +0000
+
+    Full Move Generation Redesign Nearly Complete
+
+[33mcommit 556ea9ff29b026a65d914578c859eaac5d017640[m[33m ([m[1;31morigin/master[m[33m, [m[1;32mmaster[m[33m)[m
+Author: Flynn <flynngraham101@gmail.com>
+Date:   Sun Jan 12 11:27:21 2025 +0000
+
+    Almost full piece working
+
+[33mcommit d74778c5961dc787313694d47384488fcb3bf1fd[m
+Author: Flynn <flynngraham101@gmail.com>
+Date:   Mon Jan 6 17:36:34 2025 +0000
+
+    Pieces Semi Working
