@@ -1,5 +1,6 @@
 #pragma warning disable CS0219
 
+using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,16 +18,28 @@ public class GAME : MonoBehaviour
     // Board
     public BoardManager board_manager;
     private GameMatcher gamematcher;
+    private MoveGenerator move_generator;
+
     private bool turn;
 
     // Game Controller Objects
     private CONTROLLER_PieceSetup piece_setup;
     private CONTROLLER_Timer timer_controller;
 
+
+    void doPly() {
+        Debug.Log(move_generator.GenerateLegalPly(board_manager.board, 1));
+        Debug.Log(move_generator.GenerateLegalPly(board_manager.board, 2));
+        Debug.Log(move_generator.GenerateLegalPly(board_manager.board, 3));
+        Debug.Log(move_generator.GenerateLegalPly(board_manager.board, 4));
+        Debug.Log(move_generator.GenerateLegalPly(board_manager.board, 5));
+    }
     
+
     void Awake() {   
         board_manager = new BoardManager();
         gamematcher = new GameMatcher(engine_move_time);
+        move_generator = new MoveGenerator();
 
         board_manager.board.white_id = white_id;
         board_manager.board.black_id = black_id;
@@ -50,7 +63,11 @@ public class GAME : MonoBehaviour
         board_manager.board.set_fen(board_fen);
         piece_setup.ClearPieces();
         piece_setup.SetupPieces(board_manager.board.b);
+
+        Thread ply = new Thread(doPly);
+        ply.Start();     
     }
+
 
     void Update() {
         if (board_manager.board.turn != turn) {

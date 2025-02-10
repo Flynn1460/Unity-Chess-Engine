@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 
@@ -32,6 +33,47 @@ public class MoveGenerator
         legal_moves = getDiscardedMoves(board, legal_moves, check_search);
 
         return legal_moves;
+    }
+
+
+    public String GenerateLegalPly(Board board_, int ply) {
+        Board board = board_.copy();
+        Stopwatch stopwatch = new Stopwatch();
+        stopwatch.Start();
+
+        int running_move_total = PlyDepthSearcher(board, board_, 1, ply, 0);
+
+        /*
+        List<Move> moves = GenerateLegalMoves(board);
+        foreach(Move mv in moves) {
+            board.move(mv);
+            List<Move> p2_moves = GenerateLegalMoves(board);
+            running_move_total += p2_moves.Count;
+
+            board = board_.copy();
+        }
+        */
+        
+
+        String return_string = running_move_total + " ¦ " + ply + " ply    " + stopwatch.ElapsedMilliseconds.ToString() + "ms";
+        return return_string;
+    }
+
+    private int PlyDepthSearcher(Board b, Board b_cpy, int ply, int max_ply, int moves_in_max_ply) {
+        List<Move> moves = GenerateLegalMoves(b, check_search:true);
+
+        if (ply == max_ply) {
+            return (moves_in_max_ply + moves.Count);
+        }
+        else {
+            foreach(Move mv in moves) {
+                b.move(mv);
+                moves_in_max_ply = PlyDepthSearcher(b, b_cpy, ply+1, max_ply, moves_in_max_ply);
+                b = b_cpy.copy();
+            }
+
+            return moves_in_max_ply;
+        }
     }
 
     // CHECK AND CHECKMATE

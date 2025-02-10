@@ -321,23 +321,19 @@ public class Board{
 
         if (mv.str_uci() == "e1g1" && mv.start_square.piece_type == 6 && b[0, 7]%7 == 2) {
             Move mv_ = new Move(this, "h1f1");
-            Debug.Log(mv_);
             move(mv_, false);
         }
         if (mv.str_uci() == "e1c1" && mv.start_square.piece_type == 6 && b[0, 0]%7 == 2) {
             Move mv_ = new Move(this, "a1d1");
-            Debug.Log(mv_);
             move(mv_, false);
 
         }
         if (mv.str_uci() == "e8g8" && mv.start_square.piece_type == 6 && b[7, 7]%7 == 2) {
             Move mv_ = new Move(this, "h8f8");
-            Debug.Log(mv_);
             move(mv_, false);  
         }
         if (mv.str_uci() == "e8c8" && mv.start_square.piece_type == 6 && b[7, 0]%7 == 2) {
             Move mv_ = new Move(this, "a8d8");
-            Debug.Log(mv_);
             move(mv_, false);
         }
 
