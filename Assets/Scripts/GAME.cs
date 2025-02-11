@@ -27,15 +27,6 @@ public class GAME : MonoBehaviour
     private CONTROLLER_Timer timer_controller;
 
 
-    void doPly() {
-        Debug.Log(move_generator.GenerateLegalPly(board_manager.board, 1));
-        Debug.Log(move_generator.GenerateLegalPly(board_manager.board, 2));
-        Debug.Log(move_generator.GenerateLegalPly(board_manager.board, 3));
-        Debug.Log(move_generator.GenerateLegalPly(board_manager.board, 4));
-        Debug.Log(move_generator.GenerateLegalPly(board_manager.board, 5));
-    }
-    
-
     void Awake() {   
         board_manager = new BoardManager();
         gamematcher = new GameMatcher(engine_move_time);
@@ -63,9 +54,6 @@ public class GAME : MonoBehaviour
         board_manager.board.set_fen(board_fen);
         piece_setup.ClearPieces();
         piece_setup.SetupPieces(board_manager.board.b);
-
-        Thread ply = new Thread(doPly);
-        ply.Start();     
     }
 
 

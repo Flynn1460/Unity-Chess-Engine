@@ -48,3 +48,4 @@ public class BoardManager
         board.move(piece_move, definate_move:true);
     } 
 }
+ 

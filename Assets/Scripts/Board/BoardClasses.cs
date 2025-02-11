@@ -292,14 +292,6 @@ public class Board{
         b[mv.end_square.row, mv.end_square.col] = b[mv.start_square.row, mv.start_square.col];
         b[mv.start_square.row, mv.start_square.col] = 0;
 
-        if (flip_turn) {
-            move_list.Add(mv);
-            
-            turn = !turn;
-
-            if (turn)  turn_id = white_id;
-            if (!turn) turn_id = black_id;
-        }
     
         // Castle Bools
         // WHITE ROOKS
@@ -316,7 +308,8 @@ public class Board{
 
         // Special Mvs
         if (mv.isEnpassant) {
-
+            int forward_pawn_dir = turn ? -1 : 1;
+            b[mv.end_square.row + forward_pawn_dir, mv.end_square.col] = 0;
         }
 
         if (mv.str_uci() == "e1g1" && mv.start_square.piece_type == 6 && b[0, 7]%7 == 2) {
@@ -339,6 +332,16 @@ public class Board{
 
         if (definate_move && move_generator.isCheckmate(this)) {
             is_checkmate = true;
+        }
+
+
+        if (flip_turn) {
+            move_list.Add(mv);
+            
+            turn = !turn;
+
+            if (turn)  turn_id = white_id;
+            if (!turn) turn_id = black_id;
         }
     }
 }

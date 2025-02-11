@@ -102,7 +102,7 @@ public class CONTROLLER_Piece : MonoBehaviour
 
         foreach(Move move in piece_legal_moves) {
             if (move.str_uci() == piece_move.str_uci()) {
-                bm.Push(piece_move);
+                bm.Push(move);
                 return 1;
             }
         }

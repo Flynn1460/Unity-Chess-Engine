@@ -264,15 +264,15 @@ public class MoveGenerator
         bool is_double_move = Math.Abs(lastMove.start_square.row - lastMove.end_square.row) == 2;
 
         // Check if the last move was a two-step pawn move
-        if (lastMove.end_square.piece_type == 1) // Ensure it's a pawn
+        if (lastMove.start_square.piece_type == 1) // Ensure it's a pawn
         {
             // Check if en passant is possible
-            if (Math.Abs(piece_square.col - lastMove.end_square.col) == 1 && piece_square.row == lastMove.end_square.row)
+            if (is_double_move && piece_square.row == lastMove.end_square.row)
             {
                 int pawn_fwd_dir = piece_square.isWhite ? 1 : -1;
 
-                Move en_passant_move = new Move(board, piece_square, lastMove.end_square.row + pawn_fwd_dir, lastMove.end_square.col);
-
+                Move en_passant_move = new Move(board, piece_square, lastMove.end_square.col, lastMove.end_square.row + pawn_fwd_dir);
+                en_passant_move.isEnpassant = true;
                 legal_move_list.Add(en_passant_move);
             }
         }

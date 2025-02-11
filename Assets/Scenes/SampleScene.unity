@@ -5524,10 +5524,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7dac4d4c967366439cc0e3f40172d4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ALLOWED_TIME: 600
-  engine_move_time: 400
+  ALLOWED_TIME: 6774
+  engine_move_time: -1
   white_id: 0
-  black_id: 1
+  black_id: 0
   board_fen: start
 --- !u!114 &867577149
 MonoBehaviour:
