@@ -312,20 +312,20 @@ public class Board{
             b[mv.end_square.row + forward_pawn_dir, mv.end_square.col] = 0;
         }
 
-        if (mv.str_uci() == "e1g1" && mv.start_square.piece_type == 6 && b[0, 7]%7 == 2) {
+        if (mv.str_uci() == "e1g1" && mv.start_square.piece_type == 6) {
             Move mv_ = new Move(this, "h1f1");
             move(mv_, false);
         }
-        if (mv.str_uci() == "e1c1" && mv.start_square.piece_type == 6 && b[0, 0]%7 == 2) {
+        if (mv.str_uci() == "e1c1" && mv.start_square.piece_type == 6) {
             Move mv_ = new Move(this, "a1d1");
             move(mv_, false);
 
         }
-        if (mv.str_uci() == "e8g8" && mv.start_square.piece_type == 6 && b[7, 7]%7 == 2) {
+        if (mv.str_uci() == "e8g8" && mv.start_square.piece_type == 6) {
             Move mv_ = new Move(this, "h8f8");
             move(mv_, false);  
         }
-        if (mv.str_uci() == "e8c8" && mv.start_square.piece_type == 6 && b[7, 0]%7 == 2) {
+        if (mv.str_uci() == "e8c8" && mv.start_square.piece_type == 6) {
             Move mv_ = new Move(this, "a8d8");
             move(mv_, false);
         }
