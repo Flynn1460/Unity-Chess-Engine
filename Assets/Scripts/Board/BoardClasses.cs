@@ -334,6 +334,10 @@ public class Board{
             is_checkmate = true;
         }
 
+        if (definate_move && mv.promote != -1) {
+            b[mv.end_square.row, mv.end_square.col] = mv.promote;
+        }
+
 
         if (flip_turn) {
             move_list.Add(mv);

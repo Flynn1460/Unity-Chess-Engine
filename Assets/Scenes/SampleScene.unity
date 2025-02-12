@@ -5525,9 +5525,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ALLOWED_TIME: 6774
-  engine_move_time: -1
-  white_id: 0
-  black_id: 0
+  engine_move_time: 100
+  white_id: 1
+  black_id: 1
+  do_move_scan: 1
   board_fen: start
 --- !u!114 &867577149
 MonoBehaviour:

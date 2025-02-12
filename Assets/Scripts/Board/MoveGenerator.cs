@@ -110,8 +110,6 @@ public class MoveGenerator
         int king_piece = board.turn ? 13 : 6;
         Square king_location = board.find_piece_location(king_piece);
 
-        UnityEngine.Debug.Log(String.Join(" ", playable_moves));
-
         foreach(Move playable_move in playable_moves) {
             if (playable_move.end_square.str_uci() == king_location.str_uci()) {
                 is_in_check = true;

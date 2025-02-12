@@ -12,6 +12,8 @@ public class GAME : MonoBehaviour
 
     [Range(0,2)][SerializeField] private int white_id;
     [Range(0,2)][SerializeField] private int black_id;
+    
+    [SerializeField] private bool do_move_scan = false;
 
     [SerializeField] private string board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -26,6 +28,15 @@ public class GAME : MonoBehaviour
     private CONTROLLER_PieceSetup piece_setup;
     private CONTROLLER_Timer timer_controller;
 
+
+    void RunLegalMoves() {
+        int x = 0;
+
+        while (true) {
+            x += 1;
+            Debug.Log(move_generator.GenerateLegalPly(board_manager.board, x));
+        }
+    }
 
     void Awake() {   
         board_manager = new BoardManager();
@@ -54,6 +65,11 @@ public class GAME : MonoBehaviour
         board_manager.board.set_fen(board_fen);
         piece_setup.ClearPieces();
         piece_setup.SetupPieces(board_manager.board.b);
+
+        if (do_move_scan) {
+            Thread thread = new Thread(RunLegalMoves);
+            thread.Start();    
+        }
     }
 
 
