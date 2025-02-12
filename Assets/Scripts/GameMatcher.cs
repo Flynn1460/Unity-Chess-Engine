@@ -114,7 +114,12 @@ public class CustomEngineInterface {
     public String GetMoveFromEngine(Board b, int movetime=100) {
         if (uci_engine != null) {
             string raw_engine_move = uci_engine.GetMoveFromEngine(b, movetime);
-            return raw_engine_move.Substring(9, 4);
+            try{
+                return raw_engine_move.Substring(9, 5);
+            }
+            catch {
+                return raw_engine_move.Substring(9, 4) + ' ';
+            }
         }
 
         else {
@@ -158,13 +163,13 @@ public class GameMatcher
 
 
     public void GetEngineMove(BoardManager bm) {
-
         // Convert Raw Engine Move move into a move object to be read into the board
-
         CustomEngineInterface current_engine = engine_refrence[bm.board.turn_id];
         string raw_engine_move = current_engine.GetMoveFromEngine(bm.board, move_time);
 
+        if (raw_engine_move.Length == 4 || raw_engine_move[4] == ' ') raw_engine_move = raw_engine_move.Substring(0, 4);
         Move engine_move = new Move(bm.board, raw_engine_move); 
+
 
         // Print Engine Move
         bm.board.move(engine_move, definate_move:true);

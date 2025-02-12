@@ -56,7 +56,7 @@ public class Square
     }
 
     public Square copy() {
-        Square square_cpy = new Square(null, null);
+        Square square_cpy = new Square(new Board(), "a1");
 
         square_cpy.col = col;
         square_cpy.row = row;
@@ -115,8 +115,18 @@ public class Move
 
     public Move(Board board, string uci_string) {
         if (uci_string != null) {
+
             start_square = new Square( board, uci_string.Substring(0, 2) );
             end_square = new Square( board, uci_string.Substring(2, 2) );
+
+            if (uci_string.Length == 5) {
+                switch(uci_string[4]) {
+                    case 'r': promote = 2; break; 
+                    case 'n': promote = 3; break;
+                    case 'b': promote = 4; break;
+                    case 'q': promote = 5; break;
+                }
+            }
         }
     }
 
@@ -137,13 +147,15 @@ public class Move
         return move_cpy;
     }
 
-    public override string ToString()
-    {
-        return (char)('a' + start_square.col) + (start_square.row+1).ToString() + (char)('a' + end_square.col) + (end_square.row+1).ToString();
-    }
-
+    public override string ToString() {  return str_uci();  }
     public string str_uci()
     {
+        switch(promote) {
+            case 2: return (char)('a' + start_square.col) + (start_square.row+1).ToString() + (char)('a' + end_square.col) + (end_square.row+1).ToString() + 'r';
+            case 3: return (char)('a' + start_square.col) + (start_square.row+1).ToString() + (char)('a' + end_square.col) + (end_square.row+1).ToString() + 'n';
+            case 4: return (char)('a' + start_square.col) + (start_square.row+1).ToString() + (char)('a' + end_square.col) + (end_square.row+1).ToString() + 'b';
+            case 5: return (char)('a' + start_square.col) + (start_square.row+1).ToString() + (char)('a' + end_square.col) + (end_square.row+1).ToString() + 'q';
+        }
         return (char)('a' + start_square.col) + (start_square.row+1).ToString() + (char)('a' + end_square.col) + (end_square.row+1).ToString();
     }
 }
@@ -208,17 +220,17 @@ public class Board{
         int r = 7; //Ranks
         reset_board();
 
-        foreach(char i in FEN) {
-            if (Char.IsDigit(i)) {
-                f += (int)Char.GetNumericValue(i);
+        for(int i=0; i<FEN.Length; i++) {
+            if (Char.IsDigit(FEN[i])) {
+                f += (int)Char.GetNumericValue(FEN[i]);
             }
 
-            else if (i == '/') {
+            else if (FEN[i] == '/') {
                 r -= 1;
                 f = 0;
             }
             
-            else if (i == ' ') {
+            else if (FEN[i] == ' ') {
                 char turn_char = FEN[i+1];
                 if (turn_char == 'w') turn = true;
                 if (turn_char == 'b') turn = false;
@@ -226,7 +238,7 @@ public class Board{
             }
 
             else {
-                switch(i) {
+                switch(FEN[i]) {
                     // White
                     case 'P': b[r, f] = 1; break;
                     case 'R': b[r, f] = 2; break;
@@ -257,7 +269,6 @@ public class Board{
         }
         
         Debug.LogWarning("Board Piece Finder could not find piece : " + piece);
-        Debug.Log(String.Join(" ",move_list));
         return null;
     }
 
@@ -288,11 +299,19 @@ public class Board{
 
     // MOVEMENT
     public void move(Move mv, bool flip_turn=true, bool definate_move=false) {
+        if (definate_move && move_generator.isCheckmate(this)) {
+            is_checkmate = true;
+            return;
+        }
+        
+        
         // File, Rank, File, Rank
-        b[mv.end_square.row, mv.end_square.col] = b[mv.start_square.row, mv.start_square.col];
-        b[mv.start_square.row, mv.start_square.col] = 0;
+        try {
+            b[mv.end_square.row, mv.end_square.col] = b[mv.start_square.row, mv.start_square.col];
+            b[mv.start_square.row, mv.start_square.col] = 0;
+        }
+        catch {  Debug.LogWarning("Invalid Move passed : " + mv);  }
 
-    
         // Castle Bools
         // WHITE ROOKS
         if (mv.start_square.piece_type == 2 && (mv.start_square.sq).SequenceEqual(new List<int>() {0, 0})) {  is_a1_rook_moved = true;  }
@@ -328,10 +347,6 @@ public class Board{
         if (mv.str_uci() == "e8c8" && mv.start_square.piece_type == 6) {
             Move mv_ = new Move(this, "a8d8");
             move(mv_, false);
-        }
-
-        if (definate_move && move_generator.isCheckmate(this)) {
-            is_checkmate = true;
         }
 
         if (definate_move && mv.promote != -1) {

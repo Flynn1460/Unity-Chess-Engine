@@ -122,7 +122,7 @@ public class MoveGenerator
         board.turn = !board.turn;
 
         if (!check_search) {
-            List<Move> legal_opp_moves = GenerateLegalMoves(board);
+            List<Move> legal_opp_moves = GenerateLegalMoves(board, check_search:true);
             
             foreach(Move mv in legal_opp_moves) {
                 if (mv.end_square.str_uci() == sq.str_uci()) {
@@ -380,23 +380,23 @@ public class MoveGenerator
 
         // CASTLING
 
-        if (!board.is_h1_rook_moved && !board.is_wking_moved && board.turn && board.b[0, 5] == 0 && board.b[0, 6] == 0 && board.b[0, 7]%7 == 2 && !isSquareCheckLocked(board, check_search, new Square(board, "f1"))) {
+        if (!board.is_h1_rook_moved && !board.is_wking_moved && board.turn && board.b[0, 5] == 0 && board.b[0, 6] == 0 && board.b[0, 7]%7 == 2 && !isSquareCheckLocked(board, check_search, new Square(board, "f1")) && !isSquareCheckLocked(board, check_search, new Square(board, "e1"))) {
             Move mv = new Move(board, "e1g1");
             mv.is_castle_white_short = true;
             legal_move_list.Add(mv);
         }
-        if (!board.is_a1_rook_moved && !board.is_wking_moved && board.turn && board.b[0, 3] == 0 && board.b[0, 2] == 0 && board.b[0, 0]%7 == 2 && !isSquareCheckLocked(board, check_search, new Square(board, "d1"))) {
+        if (!board.is_a1_rook_moved && !board.is_wking_moved && board.turn && board.b[0, 3] == 0 && board.b[0, 2] == 0 && board.b[0, 0]%7 == 2 && !isSquareCheckLocked(board, check_search, new Square(board, "d1")) && !isSquareCheckLocked(board, check_search, new Square(board, "e1"))) {
             Move mv = new Move(board, "e1c1");
             mv.is_castle_white_long = true;
             legal_move_list.Add(mv);
         }
 
-        if (!board.is_h8_rook_moved && !board.is_bking_moved && !board.turn && board.b[7, 5] == 0 && board.b[7, 6] == 0 && board.b[7, 7]%7 == 2 && !isSquareCheckLocked(board, check_search, new Square(board, "f8"))) {
+        if (!board.is_h8_rook_moved && !board.is_bking_moved && !board.turn && board.b[7, 5] == 0 && board.b[7, 6] == 0 && board.b[7, 7]%7 == 2 && !isSquareCheckLocked(board, check_search, new Square(board, "f8")) && !isSquareCheckLocked(board, check_search, new Square(board, "e8"))) {
             Move mv = new Move(board, "e8g8");
             mv.is_castle_black_short = true;
             legal_move_list.Add(mv);
         }
-        if (!board.is_a8_rook_moved && !board.is_bking_moved && !board.turn && board.b[7, 3] == 0 && board.b[7, 2] == 0 && board.b[7, 0]%7 == 2 && !isSquareCheckLocked(board, check_search, new Square(board, "d8"))) {
+        if (!board.is_a8_rook_moved && !board.is_bking_moved && !board.turn && board.b[7, 3] == 0 && board.b[7, 2] == 0 && board.b[7, 0]%7 == 2 && !isSquareCheckLocked(board, check_search, new Square(board, "d8")) && !isSquareCheckLocked(board, check_search, new Square(board, "e8"))) {
             Move mv = new Move(board, "e8c8");
             mv.is_castle_black_long = true;
             legal_move_list.Add(mv);
@@ -422,7 +422,7 @@ public class MoveGenerator
             int newCol = piece_square.col + dCol;
             while (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board[newRow, newCol], piece_square.isWhite))
             {
-                Move mv = new Move(board_, piece_square.col, piece_square.row, newCol, newRow);
+                Move mv = new Move(board_, piece_square, newCol, newRow);
                 legal_moves.Add(mv);
                 if (board[newRow, newCol] != 0) break; // Stop at capture
                 newRow += dRow;

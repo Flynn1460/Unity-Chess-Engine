@@ -3,6 +3,7 @@
 using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GAME : MonoBehaviour
 {
@@ -23,6 +24,7 @@ public class GAME : MonoBehaviour
     private MoveGenerator move_generator;
 
     private bool turn;
+    private bool isGameOver = false;
 
     // Game Controller Objects
     private CONTROLLER_PieceSetup piece_setup;
@@ -68,21 +70,25 @@ public class GAME : MonoBehaviour
 
         if (do_move_scan) {
             Thread thread = new Thread(RunLegalMoves);
-            thread.Start();    
+            thread.Start();
         }
     }
 
 
     void Update() {
+        if (isGameOver) return;
+        if (board_manager.board.is_checkmate || timer_controller.IS_TIMEOUT) GameOver();
+
+        
         if (board_manager.board.turn != turn) {
+            board_manager.board.is_checkmate = board_manager.move_generator.isCheckmate(board_manager.board);
+
             turn = board_manager.board.turn;
             timer_controller.flip_turn(turn);
 
             // PIECES
-
             piece_setup.ClearPieces();
             piece_setup.SetupPieces(board_manager.board.b);
-
 
             // ===== Handle ID =====
             // If ID is 0 it will be handled by BoardManager Automatically
@@ -92,15 +98,14 @@ public class GAME : MonoBehaviour
                 gamematcher.GetEngineMove(board_manager);
             }
         }
-
-
-        if (board_manager.board.is_checkmate || timer_controller.IS_TIMEOUT) {
-            GameOver();
-        }
     }
 
     void GameOver() {
         Debug.Log("CHECKMATE");
+        isGameOver = true;
+    }
+
+    public void RestartButton_PRESSED() {
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
