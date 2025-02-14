@@ -266,11 +266,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &13876992
 GameObject:
   m_ObjectHideFlags: 0
@@ -418,11 +413,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: c82334fb4b6de5a4bbab0a98f2205256, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: d9b2a36cac7084349aae9a5db37a9890, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: bdb897fb3e6fe4349bf7265703252cee, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 8ae203c678064d34a97751f114e6342e, type: 3}
-  PIECE_COLOUR: 0
 --- !u!1 &16485258
 GameObject:
   m_ObjectHideFlags: 0
@@ -744,11 +734,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: ca3016cbb8c94784baef18d1be1b3ed3, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: afde18e604c93064687faf4c26abd3f6, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: 9cde58708e39d9b42a32060b7a6163ef, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 2513456f43a11764e9a93f89fc9b9885, type: 3}
-  PIECE_COLOUR: 1
 --- !u!1 &53717377
 GameObject:
   m_ObjectHideFlags: 0
@@ -983,11 +968,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: c82334fb4b6de5a4bbab0a98f2205256, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: d9b2a36cac7084349aae9a5db37a9890, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: bdb897fb3e6fe4349bf7265703252cee, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 8ae203c678064d34a97751f114e6342e, type: 3}
-  PIECE_COLOUR: 0
 --- !u!1 &68439816
 GameObject:
   m_ObjectHideFlags: 0
@@ -1715,11 +1695,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &268069971
 GameObject:
   m_ObjectHideFlags: 0
@@ -2128,11 +2103,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: ca3016cbb8c94784baef18d1be1b3ed3, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: afde18e604c93064687faf4c26abd3f6, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: 9cde58708e39d9b42a32060b7a6163ef, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 2513456f43a11764e9a93f89fc9b9885, type: 3}
-  PIECE_COLOUR: 1
 --- !u!1 &318967252
 GameObject:
   m_ObjectHideFlags: 0
@@ -2315,11 +2285,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &349705464
 GameObject:
   m_ObjectHideFlags: 0
@@ -2467,11 +2432,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &364643361
 GameObject:
   m_ObjectHideFlags: 0
@@ -2619,11 +2579,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: ca3016cbb8c94784baef18d1be1b3ed3, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: afde18e604c93064687faf4c26abd3f6, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: 9cde58708e39d9b42a32060b7a6163ef, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 2513456f43a11764e9a93f89fc9b9885, type: 3}
-  PIECE_COLOUR: 1
 --- !u!1 &376065052
 GameObject:
   m_ObjectHideFlags: 0
@@ -3530,11 +3485,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: ca3016cbb8c94784baef18d1be1b3ed3, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: afde18e604c93064687faf4c26abd3f6, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: 9cde58708e39d9b42a32060b7a6163ef, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 2513456f43a11764e9a93f89fc9b9885, type: 3}
-  PIECE_COLOUR: 1
 --- !u!1 &592379941
 GameObject:
   m_ObjectHideFlags: 0
@@ -3958,11 +3908,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: c82334fb4b6de5a4bbab0a98f2205256, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: d9b2a36cac7084349aae9a5db37a9890, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: bdb897fb3e6fe4349bf7265703252cee, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 8ae203c678064d34a97751f114e6342e, type: 3}
-  PIECE_COLOUR: 0
 --- !u!1 &630977538
 GameObject:
   m_ObjectHideFlags: 0
@@ -4307,11 +4252,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &658813936
 GameObject:
   m_ObjectHideFlags: 0
@@ -5256,11 +5196,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &797955870
 GameObject:
   m_ObjectHideFlags: 0
@@ -5756,11 +5691,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &863890403
 GameObject:
   m_ObjectHideFlags: 0
@@ -6073,11 +6003,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &893147403
 GameObject:
   m_ObjectHideFlags: 0
@@ -6399,11 +6324,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: ca3016cbb8c94784baef18d1be1b3ed3, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: afde18e604c93064687faf4c26abd3f6, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: 9cde58708e39d9b42a32060b7a6163ef, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 2513456f43a11764e9a93f89fc9b9885, type: 3}
-  PIECE_COLOUR: 1
 --- !u!1 &923076225
 GameObject:
   m_ObjectHideFlags: 0
@@ -6946,11 +6866,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &1015275212
 GameObject:
   m_ObjectHideFlags: 0
@@ -7098,11 +7013,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &1063238302
 GameObject:
   m_ObjectHideFlags: 0
@@ -7337,11 +7247,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &1079512774
 GameObject:
   m_ObjectHideFlags: 0
@@ -7750,11 +7655,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: c82334fb4b6de5a4bbab0a98f2205256, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: d9b2a36cac7084349aae9a5db37a9890, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: bdb897fb3e6fe4349bf7265703252cee, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 8ae203c678064d34a97751f114e6342e, type: 3}
-  PIECE_COLOUR: 0
 --- !u!1 &1133638668
 GameObject:
   m_ObjectHideFlags: 0
@@ -8076,11 +7976,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: c82334fb4b6de5a4bbab0a98f2205256, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: d9b2a36cac7084349aae9a5db37a9890, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: bdb897fb3e6fe4349bf7265703252cee, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 8ae203c678064d34a97751f114e6342e, type: 3}
-  PIECE_COLOUR: 0
 --- !u!1 &1232234665
 GameObject:
   m_ObjectHideFlags: 0
@@ -8954,11 +8849,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: ca3016cbb8c94784baef18d1be1b3ed3, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: afde18e604c93064687faf4c26abd3f6, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: 9cde58708e39d9b42a32060b7a6163ef, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 2513456f43a11764e9a93f89fc9b9885, type: 3}
-  PIECE_COLOUR: 1
 --- !u!1 &1422193976
 GameObject:
   m_ObjectHideFlags: 0
@@ -9280,11 +9170,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &1532055011
 GameObject:
   m_ObjectHideFlags: 0
@@ -9519,11 +9404,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: c82334fb4b6de5a4bbab0a98f2205256, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: d9b2a36cac7084349aae9a5db37a9890, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: bdb897fb3e6fe4349bf7265703252cee, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 8ae203c678064d34a97751f114e6342e, type: 3}
-  PIECE_COLOUR: 0
 --- !u!1 &1563042628
 GameObject:
   m_ObjectHideFlags: 0
@@ -9671,11 +9551,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: c82334fb4b6de5a4bbab0a98f2205256, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: d9b2a36cac7084349aae9a5db37a9890, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: bdb897fb3e6fe4349bf7265703252cee, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 8ae203c678064d34a97751f114e6342e, type: 3}
-  PIECE_COLOUR: 0
 --- !u!1 &1570116370
 GameObject:
   m_ObjectHideFlags: 0
@@ -9823,11 +9698,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: ca3016cbb8c94784baef18d1be1b3ed3, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: afde18e604c93064687faf4c26abd3f6, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: 9cde58708e39d9b42a32060b7a6163ef, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 2513456f43a11764e9a93f89fc9b9885, type: 3}
-  PIECE_COLOUR: 1
 --- !u!1 &1580761241
 GameObject:
   m_ObjectHideFlags: 0
@@ -10323,11 +10193,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &1799453894
 GameObject:
   m_ObjectHideFlags: 0
@@ -10699,11 +10564,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &1899632338
 GameObject:
   m_ObjectHideFlags: 0
@@ -11112,11 +10972,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &1975565206
 GameObject:
   m_ObjectHideFlags: 0
@@ -11438,11 +11293,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: c82334fb4b6de5a4bbab0a98f2205256, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: d9b2a36cac7084349aae9a5db37a9890, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: bdb897fb3e6fe4349bf7265703252cee, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 8ae203c678064d34a97751f114e6342e, type: 3}
-  PIECE_COLOUR: 0
 --- !u!1 &2061015208
 GameObject:
   m_ObjectHideFlags: 0
@@ -11590,11 +11440,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 0}
-  KNIGHT_TEXTURE: {fileID: 0}
-  BISHOP_TEXTURE: {fileID: 0}
-  ROOK_TEXTURE: {fileID: 0}
-  PIECE_COLOUR: 0
 --- !u!1 &2074918076
 GameObject:
   m_ObjectHideFlags: 0
@@ -11979,11 +11824,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88869c668b89f8d4fa9369e574d37f17, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  QUEEN_TEXTURE: {fileID: 21300000, guid: ca3016cbb8c94784baef18d1be1b3ed3, type: 3}
-  KNIGHT_TEXTURE: {fileID: 21300000, guid: afde18e604c93064687faf4c26abd3f6, type: 3}
-  BISHOP_TEXTURE: {fileID: 21300000, guid: 9cde58708e39d9b42a32060b7a6163ef, type: 3}
-  ROOK_TEXTURE: {fileID: 21300000, guid: 2513456f43a11764e9a93f89fc9b9885, type: 3}
-  PIECE_COLOUR: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -81,16 +81,13 @@ public class GAME : MonoBehaviour
         if (board_manager.board.turn != turn) {
             piece_setup.ClearPieces();
             piece_setup.SetupPieces(board_manager.board.b);
-        }
 
-        board_manager.board.is_checkmate = board_manager.move_generator.isCheckmate(board_manager.board);
-        board_manager.board.is_draw = board_manager.move_generator.isDraw(board_manager.board);
+            board_manager.board.is_checkmate = board_manager.move_generator.isCheckmate(board_manager.board);
+            board_manager.board.is_draw = board_manager.move_generator.isDraw(board_manager.board);
+
+            if (board_manager.board.is_draw) {  GameOver(0); return;  }
+            if (board_manager.board.is_checkmate != 0 || timer_controller.IS_TIMEOUT) {  GameOver(board_manager.board.is_checkmate); return;  }
         
-        
-        if (board_manager.board.is_draw) {  GameOver(0); return;  }
-        if (board_manager.board.is_checkmate != 0 || timer_controller.IS_TIMEOUT) {  GameOver(board_manager.board.is_checkmate); return;  }
-        
-        if (board_manager.board.turn != turn) {
             turn = board_manager.board.turn;
             timer_controller.flip_turn(turn);
 

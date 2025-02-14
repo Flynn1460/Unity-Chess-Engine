@@ -279,9 +279,19 @@ public class Board{
 
 
     public Square find_piece_location(int piece) {
-        for (int r=0; r<8;r++) {
-            for (int c=0; c<8; c++) {
-                if (b[r, c] == piece) return new Square(this, c, r);
+        if (piece == 13) {
+            for (int r=7; r>=0; r--) {
+                for (int c=0; c<8; c++) {
+                    if (b[r, c] == piece) return new Square(this, c, r);
+                }
+            }
+        }
+
+        else {
+            for (int r=0; r<8;r++) {
+                for (int c=0; c<8; c++) {
+                    if (b[r, c] == piece) return new Square(this, c, r);
+                }
             }
         }
         
