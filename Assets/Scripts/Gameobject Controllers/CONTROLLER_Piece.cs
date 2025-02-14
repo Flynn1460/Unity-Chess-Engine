@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,15 +5,6 @@ public class CONTROLLER_Piece : MonoBehaviour
 {
     // OTHER SCRIPTS
     private BoardManager bm;
-
-    // SERIALIZED FIELDS
-    [Header("Pawn Promotional Textures")]
-    [SerializeField] private Sprite QUEEN_TEXTURE;
-    [SerializeField] private Sprite KNIGHT_TEXTURE;
-    [SerializeField] private Sprite BISHOP_TEXTURE;
-    [SerializeField] private Sprite ROOK_TEXTURE;
-
-    [SerializeField] private int PIECE_COLOUR;
 
     // GENERAL
     private Vector3 offset = Vector3.zero;
@@ -74,7 +64,7 @@ public class CONTROLLER_Piece : MonoBehaviour
 
         Square start_square = new Square(bm.board, name);
         Square end_square = new Square(bm.board, col, row);
-        Move piece_move = new Move(bm.board, start_square, end_square);
+        Move piece_move = new Move(start_square, end_square);
 
         int outcome = DroppedPiece(piece_move);
         GetComponent<SpriteRenderer>().sortingOrder = 0; // Plant piece
@@ -85,10 +75,6 @@ public class CONTROLLER_Piece : MonoBehaviour
             GameObject existing_piece = GameObject.Find(end_square.ToString());
             if (existing_piece != null) Destroy(existing_piece);
             name = end_square.ToString();
-        }
-
-        else if (outcome == 2) { // MOVE ACCEPTED - QUEEN PROMOTION
-            
         }
 
         else { // MOVE DENIED

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using UnityEngine;
 
 
 public class MoveGenerator
@@ -30,7 +29,9 @@ public class MoveGenerator
         //List<Move> discarded_legal_moves = getDiscardedMoves(board, legal_moves, check_search);
         //legal_moves.Except(discarded_legal_moves).ToList();
 
+
         legal_moves = getDiscardedMoves(board, legal_moves, check_search);
+
 
         return legal_moves;
     }
@@ -43,33 +44,21 @@ public class MoveGenerator
 
         int running_move_total = PlyDepthSearcher(board, board_, 1, ply, 0);
 
-        /*
-        List<Move> moves = GenerateLegalMoves(board);
-        foreach(Move mv in moves) {
-            board.move(mv);
-            List<Move> p2_moves = GenerateLegalMoves(board);
-            running_move_total += p2_moves.Count;
-
-            board = board_.copy();
-        }
-        */
-        
-
         String return_string = running_move_total + " ¦ " + ply + " ply    " + stopwatch.ElapsedMilliseconds.ToString() + "ms";
         return return_string;
     }
 
     private int PlyDepthSearcher(Board b, Board b_cpy, int ply, int max_ply, int moves_in_max_ply) {
-        List<Move> moves = GenerateLegalMoves(b, check_search:true);
+        List<Move> moves = GenerateLegalMoves(b);
 
-        if (ply == max_ply) {
-            return (moves_in_max_ply + moves.Count);
-        }
+        if (ply == max_ply) return (moves_in_max_ply + moves.Count);
+
         else {
             foreach(Move mv in moves) {
                 b.move(mv);
-                moves_in_max_ply = PlyDepthSearcher(b, b_cpy, ply+1, max_ply, moves_in_max_ply);
-                b = b_cpy.copy();
+                int x =  PlyDepthSearcher(b, b_cpy, ply+1, max_ply, moves_in_max_ply);
+                moves_in_max_ply = x;
+                b.undo_move();
             }
 
             return moves_in_max_ply;
@@ -78,7 +67,7 @@ public class MoveGenerator
 
     // CHECK AND CHECKMATE
 
-    public bool isCheckmate(Board board_) {
+    public int isCheckmate(Board board_) {
         // Check for all moves for whoevers turn it is can white checkmate you
 
         Board board = board_.copy();
@@ -93,15 +82,43 @@ public class MoveGenerator
                 number_of_safe_moves += 1;
             }
 
-            board = board_.copy();
+            board.undo_move();
         }
 
         if (number_of_safe_moves == 0) {
-            return true;
+            if(!board.turn) return 1;
+            if(board.turn ) return -1;
         }
+
+        return 0;
+    }
+
+    public bool isDraw(Board board_) {
+        Board board = board_.copy();
+
+        List<int> wp = new List<int>();
+        List<int> bp = new List<int>();
+
+        int piece = 0;
+
+        for(int row=0; row<8; row++) {
+            for (int col=0; col<8; col++) {
+                piece = board.b[row, col];
+                if (piece < 7 && piece != 0) wp.Add(piece);
+                if (piece > 7) bp.Add(piece);
+            }
+        }
+
+        if ((wp.Contains(6) && wp.Count == 1) && (bp.Contains(13) && bp.Count == 1)) return true;
+        if ((wp.Contains(6) && wp.Contains(4) && wp.Count == 2) && (bp.Contains(13) && bp.Count == 1)) return true;
+        if ((wp.Contains(6) && wp.Count == 1) && (bp.Contains(13) && bp.Contains(11) && bp.Count == 2)) return true;
+
+        List<Move> moves = GenerateLegalMoves(board, check_search:true);
+        if (moves.Count == 0) return true;
 
         return false;
     }
+
 
     public bool isCheck(Board board) {
         List<Move> playable_moves = GenerateLegalMoves(board, check_search:true);
@@ -151,7 +168,7 @@ public class MoveGenerator
                     removed_moves.Add(move_);
                 }
 
-                board = board_.copy();
+                board.undo_move();
             }
 
         }
@@ -194,16 +211,16 @@ public class MoveGenerator
         Square forward_sq = new Square(board, piece_square.col, piece_square.row + direction);
         Square double_forward_sq = new Square(board, piece_square.col, piece_square.row + (2*direction));
 
-        Move forward_move = new Move(board, piece_square, forward_sq);
-        Move double_forward_move = new Move(board, piece_square, double_forward_sq);
+        Move forward_move = new Move(piece_square, forward_sq);
+        Move double_forward_move = new Move(piece_square, double_forward_sq);
 
 
         // Diagonal Moves
         Square l_diagonal_sq = new Square(board, piece_square.col-1, piece_square.row+direction);
         Square r_diagonal_sq = new Square(board, piece_square.col+1, piece_square.row+direction);
 
-        Move l_diagonal_move = new Move(board, piece_square, l_diagonal_sq);
-        Move r_diagonal_move = new Move(board, piece_square, r_diagonal_sq);
+        Move l_diagonal_move = new Move(piece_square, l_diagonal_sq);
+        Move r_diagonal_move = new Move(piece_square, r_diagonal_sq);
 
 
         if (IsInBounds(forward_move) && forward_move.end_square.piece == 0) {

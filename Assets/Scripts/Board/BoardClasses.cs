@@ -55,18 +55,19 @@ public class Square
         catch {}
     }
 
+    public Square() {}
+
     public Square copy() {
-        Square square_cpy = new Square(new Board(), "a1");
-
-        square_cpy.col = col;
-        square_cpy.row = row;
-        square_cpy.sq = sq;
-        square_cpy.isWhite = isWhite;
-        square_cpy.piece = piece;
-        square_cpy.piece_type = piece_type;
-        square_cpy.start_row = start_row;
-
-        return square_cpy;
+        return new Square()
+        { 
+            col = this.col,
+            row = this.row, 
+            sq = new List<int>(this.sq),
+            isWhite = this.isWhite, 
+            piece = this.piece, 
+            piece_type = this.piece_type,
+            start_row = this.start_row 
+        };
     }
 
     public override string ToString() {
@@ -92,8 +93,21 @@ public class Move
     public bool is_castle_black_short = false;
     public bool is_castle_black_long = false;
 
+    public int replaced_piece = 0;
+
     public int promote = -1; // If number is set to a valid piece type then it is a promoting piece
     
+    public int[,] board_before_move = new int[8,8] {
+            { 2,  3,  4,  5,  6,  4,  3, 2 },
+            { 1,  1,  1,  1,  1,  1,  1, 1 },
+            { 0,  0,  0,  0,  0,  0,  0, 0 },
+            { 0,  0,  0,  0,  0,  0,  0, 0 },
+            { 0,  0,  0,  0,  0,  0,  0, 0 },
+            { 0,  0,  0,  0,  0,  0,  0, 0 },
+            { 8,  8,  8,  8,  8,  8,  8, 8 },
+            { 9, 10, 11, 12, 13, 11, 10, 9 }
+    };
+
 
     // DECLARATIONS
     public Move(Board board, int col1, int row1, int col2, int row2) {
@@ -108,7 +122,7 @@ public class Move
     }
 
 
-    public Move(Board board, Square start_square_, Square end_square_) {
+    public Move(Square start_square_, Square end_square_) {
         start_square = start_square_;
         end_square = end_square_;
     }
@@ -129,6 +143,7 @@ public class Move
             }
         }
     }
+
 
 
     public Move copy() {
@@ -185,7 +200,9 @@ public class Board{
 
     public bool turn = true;
     public List<Move> move_list = new List<Move>();
-    public bool is_checkmate = false;
+    
+    public int is_checkmate = 0;
+    public bool is_draw = false;
 
     /*
     * -1 # BLACK WIN
@@ -299,14 +316,17 @@ public class Board{
 
     // MOVEMENT
     public void move(Move mv, bool flip_turn=true, bool definate_move=false) {
-        if (definate_move && move_generator.isCheckmate(this)) {
-            is_checkmate = true;
-            return;
-        }
+        mv.board_before_move = (int[,])b.Clone();
+
+        // if (definate_move && move_generator.isCheckmate(this) != 0) {
+        //     is_checkmate = true;
+        //     return;
+        // }
         
         
         // File, Rank, File, Rank
         try {
+            mv.replaced_piece = b[mv.end_square.row, mv.end_square.col];
             b[mv.end_square.row, mv.end_square.col] = b[mv.start_square.row, mv.start_square.col];
             b[mv.start_square.row, mv.start_square.col] = 0;
         }
@@ -362,5 +382,20 @@ public class Board{
             if (turn)  turn_id = white_id;
             if (!turn) turn_id = black_id;
         }
+    }
+
+    public void undo_move(bool flip_turn=true) {
+        Move prev_mv = move_list[move_list.Count-1];
+
+        if (flip_turn) {
+            move_list.RemoveAt(move_list.Count-1);
+
+            turn = !turn;
+
+            if (turn)  turn_id = white_id;
+            if (!turn) turn_id = black_id;
+        }
+
+        b = (int[,])prev_mv.board_before_move.Clone();
     }
 }

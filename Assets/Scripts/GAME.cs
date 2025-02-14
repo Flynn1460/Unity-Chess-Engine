@@ -3,7 +3,6 @@
 using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.UI;
 
 public class GAME : MonoBehaviour
 {
@@ -15,6 +14,7 @@ public class GAME : MonoBehaviour
     [Range(0,2)][SerializeField] private int black_id;
     
     [SerializeField] private bool do_move_scan = false;
+    [SerializeField] private bool auto_restart_game = false;
 
     [SerializeField] private string board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -77,22 +77,22 @@ public class GAME : MonoBehaviour
 
     void Update() {
         if (isGameOver) return;
-        if (board_manager.board.is_checkmate || timer_controller.IS_TIMEOUT) GameOver();
 
-        
         if (board_manager.board.turn != turn) {
-            board_manager.board.is_checkmate = board_manager.move_generator.isCheckmate(board_manager.board);
-
-            turn = board_manager.board.turn;
-            timer_controller.flip_turn(turn);
-
-            // PIECES
             piece_setup.ClearPieces();
             piece_setup.SetupPieces(board_manager.board.b);
+        }
 
-            // ===== Handle ID =====
-            // If ID is 0 it will be handled by BoardManager Automatically
-            // If ID is >1 then its an engine to be dealt with by the game matcher
+        board_manager.board.is_checkmate = board_manager.move_generator.isCheckmate(board_manager.board);
+        board_manager.board.is_draw = board_manager.move_generator.isDraw(board_manager.board);
+        
+        
+        if (board_manager.board.is_draw) {  GameOver(0); return;  }
+        if (board_manager.board.is_checkmate != 0 || timer_controller.IS_TIMEOUT) {  GameOver(board_manager.board.is_checkmate); return;  }
+        
+        if (board_manager.board.turn != turn) {
+            turn = board_manager.board.turn;
+            timer_controller.flip_turn(turn);
 
             if (board_manager.board.turn_id > 0) {
                 gamematcher.GetEngineMove(board_manager);
@@ -100,9 +100,14 @@ public class GAME : MonoBehaviour
         }
     }
 
-    void GameOver() {
-        Debug.Log("CHECKMATE");
+    void GameOver(int state) {
+        if (state == 1 ) Debug.Log("WHITE CHECKMATE");
+        if (state == 0 ) Debug.Log("DRAW");
+        if (state == -1) Debug.Log("BLACK CHECKMATE");
+
         isGameOver = true;
+
+        if (auto_restart_game) RestartButton_PRESSED();
     }
 
     public void RestartButton_PRESSED() {
