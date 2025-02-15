@@ -35,6 +35,8 @@ public class GAME : MonoBehaviour
     void RunLegalMoves() {
         int x = 0;
 
+        board_manager.board.PrintBoard();
+
         while (true) {
             x += 1;
             Debug.Log(board_manager.move_generator.GenerateLegalPly(board_manager.board, x));

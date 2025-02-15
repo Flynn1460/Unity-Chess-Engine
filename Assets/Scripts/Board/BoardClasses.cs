@@ -126,9 +126,11 @@ public class Move
     }
 
 
-    public Move(Square start_square_, Square end_square_) {
+    public Move(Square start_square_, Square end_square_, int promotion=5) {
         start_square = start_square_;
         end_square = end_square_;
+
+        if ((end_square.row == 7 && start_square.piece == 1) || (end_square.row == 0 && start_square.piece == 8)) promote = start_square.isWhite ? promotion : promotion+7;
     }
 
     public Move(Board board, string uci_string) {
@@ -138,12 +140,17 @@ public class Move
             end_square = new Square( board, uci_string.Substring(2, 2) );
 
             if (uci_string.Length == 5) {
-                switch(uci_string[4]) {
-                    case 'r': promote = 2; break; 
-                    case 'n': promote = 3; break;
-                    case 'b': promote = 4; break;
-                    case 'q': promote = 5; break;
-                }
+                if (uci_string[4] == 'r' && board.turn ) promote = 2; 
+                if (uci_string[4] == 'r' && !board.turn) promote = 9;
+
+                if (uci_string[4] == 'n' && board.turn ) promote = 3;
+                if (uci_string[4] == 'n' && !board.turn) promote = 10;
+
+                if (uci_string[4] == 'b' && board.turn ) promote = 4;
+                if (uci_string[4] == 'b' && !board.turn) promote = 11;
+
+                if (uci_string[4] == 'q' && board.turn ) promote = 5;
+                if (uci_string[4] == 'q' && !board.turn) promote = 12;
             }
         }
     }
@@ -169,7 +176,7 @@ public class Move
     public override string ToString() {  return str_uci();  }
     public string str_uci()
     {
-        switch(promote) {
+        switch(promote%7) {
             case 2: return (char)('a' + start_square.col) + (start_square.row+1).ToString() + (char)('a' + end_square.col) + (end_square.row+1).ToString() + 'r';
             case 3: return (char)('a' + start_square.col) + (start_square.row+1).ToString() + (char)('a' + end_square.col) + (end_square.row+1).ToString() + 'n';
             case 4: return (char)('a' + start_square.col) + (start_square.row+1).ToString() + (char)('a' + end_square.col) + (end_square.row+1).ToString() + 'b';
@@ -271,8 +278,8 @@ public class Board{
                 if (x.Contains('q'))   is_a8_rook_moved = false;
                 if (x.Contains('K'))   is_h1_rook_moved = false; 
                 if (x.Contains('Q'))   is_a1_rook_moved = false; 
-                if (x.Contains("KQ"))  is_wking_moved   = false; 
-                if (x.Contains("kq"))  is_bking_moved   = false; 
+                if (x.Contains("K") || x.Contains("Q"))  is_wking_moved   = false; 
+                if (x.Contains("k") || x.Contains("q"))  is_bking_moved   = false; 
 
                 break;
             }
@@ -347,7 +354,7 @@ public class Board{
         return board_cpy;
     }
 
-    public void PrintBoard(bool print_arbs=false)
+    public void PrintBoard(bool print_arbs=true)
     {
         string output = "";
         for (int i = 0; i < b.GetLength(0); i++)
@@ -380,9 +387,11 @@ public class Board{
 
         // File, Rank, File, Rank
         try {
-            mv.replaced_piece = b[mv.end_square.row, mv.end_square.col];
-            b[mv.end_square.row, mv.end_square.col] = b[mv.start_square.row, mv.start_square.col];
-            b[mv.start_square.row, mv.start_square.col] = 0;
+            if (mv.promote == -1) {
+                mv.replaced_piece = b[mv.end_square.row, mv.end_square.col];
+                b[mv.end_square.row, mv.end_square.col] = b[mv.start_square.row, mv.start_square.col];
+                b[mv.start_square.row, mv.start_square.col] = 0;
+            }
         }
         catch {  Debug.LogWarning("Invalid Move passed : " + mv);  }
 
@@ -407,24 +416,29 @@ public class Board{
 
         if (mv.str_uci() == "e1g1" && mv.start_square.piece_type == 6) {
             Move mv_ = new Move(this, "h1f1");
-            move(mv_, false);
+            b[mv_.end_square.row, mv_.end_square.col] = b[mv_.start_square.row, mv_.start_square.col];
+            b[mv_.start_square.row, mv_.start_square.col] = 0;
         }
         if (mv.str_uci() == "e1c1" && mv.start_square.piece_type == 6) {
             Move mv_ = new Move(this, "a1d1");
-            move(mv_, false);
+            b[mv_.end_square.row, mv_.end_square.col] = b[mv_.start_square.row, mv_.start_square.col];
+            b[mv_.start_square.row, mv_.start_square.col] = 0;
 
         }
         if (mv.str_uci() == "e8g8" && mv.start_square.piece_type == 6) {
             Move mv_ = new Move(this, "h8f8");
-            move(mv_, false);  
+            b[mv_.end_square.row, mv_.end_square.col] = b[mv_.start_square.row, mv_.start_square.col];
+            b[mv_.start_square.row, mv_.start_square.col] = 0;  
         }
         if (mv.str_uci() == "e8c8" && mv.start_square.piece_type == 6) {
             Move mv_ = new Move(this, "a8d8");
-            move(mv_, false);
+            b[mv_.end_square.row, mv_.end_square.col] = b[mv_.start_square.row, mv_.start_square.col];
+            b[mv_.start_square.row, mv_.start_square.col] = 0;
         }
 
         if (definate_move && mv.promote != -1) {
             b[mv.end_square.row, mv.end_square.col] = mv.promote;
+            b[mv.start_square.row, mv.start_square.col] = 0;
         }
 
         if (flip_turn) {
