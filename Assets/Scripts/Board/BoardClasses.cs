@@ -108,6 +108,10 @@ public class Move
             { 9, 10, 11, 12, 13, 11, 10, 9 }
     };
 
+    public Board before_board;
+
+    public List<String> mv_change_list = new List<String>();
+
 
     // DECLARATIONS
     public Move(Board board, int col1, int row1, int col2, int row2) {
@@ -251,6 +255,25 @@ public class Board{
                 char turn_char = FEN[i+1];
                 if (turn_char == 'w') turn = true;
                 if (turn_char == 'b') turn = false;
+
+                String x = FEN.Substring(i+3, 4);
+
+
+                is_a1_rook_moved = true;
+                is_a8_rook_moved = true;
+                is_h1_rook_moved = true;
+                is_h8_rook_moved = true;
+
+                is_wking_moved = true;
+                is_bking_moved = true;
+
+                if (x.Contains('k'))   is_h8_rook_moved = false;
+                if (x.Contains('q'))   is_a8_rook_moved = false;
+                if (x.Contains('K'))   is_h1_rook_moved = false; 
+                if (x.Contains('Q'))   is_a1_rook_moved = false; 
+                if (x.Contains("KQ"))  is_wking_moved   = false; 
+                if (x.Contains("kq"))  is_bking_moved   = false; 
+
                 break;
             }
 
@@ -324,16 +347,37 @@ public class Board{
         return board_cpy;
     }
 
+    public void PrintBoard(bool print_arbs=false)
+    {
+        string output = "";
+        for (int i = 0; i < b.GetLength(0); i++)
+        {
+            for (int j = 0; j < b.GetLength(1); j++)
+            {
+                output += b[i, j].ToString("D2") + " "; // "D2" ensures two-digit formatting for alignment
+            }
+            output += "\n"; // New line after each row
+        }
+
+        if (print_arbs) {
+            output += "\n";
+            output += "WK : " + is_wking_moved + "\n";
+            output += "BK : " + is_bking_moved + "\n";
+            output += "A1 : " + is_a1_rook_moved + "\n";
+            output += "A8 : " + is_a8_rook_moved + "\n";
+            output += "H1 : " + is_h1_rook_moved + "\n";
+            output += "H8 : " + is_h8_rook_moved + "\n";
+            output += "\n";
+        }
+
+        Debug.Log(output);
+    }
+
     // MOVEMENT
     public void move(Move mv, bool flip_turn=true, bool definate_move=false) {
         mv.board_before_move = (int[,])b.Clone();
+        mv.before_board = copy();
 
-        // if (definate_move && move_generator.isCheckmate(this) != 0) {
-        //     is_checkmate = true;
-        //     return;
-        // }
-        
-        
         // File, Rank, File, Rank
         try {
             mv.replaced_piece = b[mv.end_square.row, mv.end_square.col];
@@ -344,16 +388,16 @@ public class Board{
 
         // Castle Bools
         // WHITE ROOKS
-        if (mv.start_square.piece_type == 2 && (mv.start_square.sq).SequenceEqual(new List<int>() {0, 0})) {  is_a1_rook_moved = true;  }
-        if (mv.start_square.piece_type == 2 && (mv.start_square.sq).SequenceEqual(new List<int>() {7, 0})) {  is_h1_rook_moved = true;  }
+        if (mv.start_square.piece_type == 2 && !is_a1_rook_moved && (mv.start_square.sq).SequenceEqual(new List<int>() {0, 0})) {  is_a1_rook_moved = true; mv.mv_change_list.Add("a1r");  }
+        if (mv.start_square.piece_type == 2 && !is_h1_rook_moved && (mv.start_square.sq).SequenceEqual(new List<int>() {7, 0})) {  is_h1_rook_moved = true; mv.mv_change_list.Add("h1r");  }
         
         // BLACK ROOKS
-        if (mv.start_square.piece_type == 2 && (mv.start_square.sq).SequenceEqual(new List<int>() {0, 7})) {  is_a8_rook_moved = true;  }
-        if (mv.start_square.piece_type == 2 && (mv.start_square.sq).SequenceEqual(new List<int>() {7, 7})) {  is_h8_rook_moved = true;  }
+        if (mv.start_square.piece_type == 2 && !is_a8_rook_moved && (mv.start_square.sq).SequenceEqual(new List<int>() {0, 7})) {  is_a8_rook_moved = true; mv.mv_change_list.Add("a8r");  }
+        if (mv.start_square.piece_type == 2 && !is_h8_rook_moved && (mv.start_square.sq).SequenceEqual(new List<int>() {7, 7})) {  is_h8_rook_moved = true; mv.mv_change_list.Add("h8r");  }
         
         // KINGS
-        if (mv.start_square.piece_type == 6 && (mv.start_square.sq).SequenceEqual(new List<int>() {4, 0})) {   is_wking_moved = true;  }
-        if (mv.start_square.piece_type == 6 && (mv.start_square.sq).SequenceEqual(new List<int>() {4, 7})) {   is_bking_moved = true;  }
+        if (mv.start_square.piece_type == 6 && !is_wking_moved && (mv.start_square.sq).SequenceEqual(new List<int>() {4, 0})) {   is_wking_moved = true; mv.mv_change_list.Add("wk");  }
+        if (mv.start_square.piece_type == 6 && !is_bking_moved && (mv.start_square.sq).SequenceEqual(new List<int>() {4, 7})) {   is_bking_moved = true; mv.mv_change_list.Add("bk");  }
 
         // Special Mvs
         if (mv.isEnpassant) {
@@ -383,7 +427,6 @@ public class Board{
             b[mv.end_square.row, mv.end_square.col] = mv.promote;
         }
 
-
         if (flip_turn) {
             move_list.Add(mv);
             
@@ -396,6 +439,7 @@ public class Board{
 
     public void undo_move(bool flip_turn=true) {
         Move prev_mv = move_list[move_list.Count-1];
+        /*
 
         if (flip_turn) {
             move_list.RemoveAt(move_list.Count-1);
@@ -407,5 +451,37 @@ public class Board{
         }
 
         b = (int[,])prev_mv.board_before_move.Clone();
+
+        foreach(String change in prev_mv.mv_change_list) {
+            Debug.Log(change);
+            switch(change) {
+                case "a1r": is_a1_rook_moved = false; break;
+                case "a8r": is_a8_rook_moved = false; break;
+                case "h1r": is_h1_rook_moved = false; break;
+                case "h8r": is_h8_rook_moved = false; break;
+                case "wk" : is_wking_moved   = false; break;
+                case "bk" : is_bking_moved   = false; break;
+            }
+        }
+        */
+
+        Board x = prev_mv.before_board.copy();
+
+        turn = x.turn;
+        is_checkmate = x.is_checkmate;
+        is_gameover = x.is_gameover;
+        is_a1_rook_moved = x.is_a1_rook_moved;
+        is_a8_rook_moved = x.is_a8_rook_moved;
+        is_h1_rook_moved = x.is_h1_rook_moved;
+        is_h8_rook_moved = x.is_h8_rook_moved;
+        is_wking_moved = x.is_wking_moved;
+        is_bking_moved = x.is_bking_moved;
+        white_id = x.white_id;
+        black_id = x.black_id;
+        turn_id = x.turn_id;
+        SetupFen = x.SetupFen;
+
+        b = (int[,])x.b.Clone();
+        move_list = new List<Move>(x.move_list);
     }
 }

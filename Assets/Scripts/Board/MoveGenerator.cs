@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Unity.Collections;
 
 
 public class MoveGenerator
@@ -63,22 +64,25 @@ public class MoveGenerator
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        int running_move_total = PlyDepthSearcher(board, board_, 1, ply, 0);
+        int running_move_total = PlyDepthSearcher(board, 1, ply, 0);
 
         String return_string = running_move_total + " ¦ " + ply + " ply    " + stopwatch.ElapsedMilliseconds.ToString() + "ms";
         return return_string;
     }
 
-    private int PlyDepthSearcher(Board b, Board b_cpy, int ply, int max_ply, int moves_in_max_ply) {
+    private int PlyDepthSearcher(Board b, int ply, int max_ply, int moves_in_max_ply) {
         List<Move> moves = GenerateLegalMoves(b);
 
-        if (ply == max_ply) return (moves_in_max_ply + moves.Count);
+        if (ply == max_ply){
+            return moves_in_max_ply + moves.Count;
+        } 
 
         else {
             foreach(Move mv in moves) {
                 b.move(mv);
-                int x =  PlyDepthSearcher(b, b_cpy, ply+1, max_ply, moves_in_max_ply);
-                moves_in_max_ply = x;
+
+                moves_in_max_ply = PlyDepthSearcher(b, ply+1, max_ply, moves_in_max_ply);
+
                 b.undo_move();
             }
 
@@ -232,21 +236,27 @@ public class MoveGenerator
 
         Move l_diagonal_move = new Move(piece_square, l_diagonal_sq);
         Move r_diagonal_move = new Move(piece_square, r_diagonal_sq);
+        Move diagonal_promotion_move = new Move(piece_square, r_diagonal_sq);
 
 
         if (IsInBounds(forward_move) && forward_move.end_square.piece == 0) {
 
             // Add forward move and set it as promotion square if needed
             if (forward_move.end_square.row%7 == 0) {
+
+                forward_move = new Move(piece_square, forward_sq);
                 forward_move.promote = 2; // Promote to Rook
                 legal_move_list.Add(forward_move);
 
+                forward_move = new Move(piece_square, forward_sq);
                 forward_move.promote = 3; // Promote to Bishop
                 legal_move_list.Add(forward_move);
 
+                forward_move = new Move(piece_square, forward_sq);
                 forward_move.promote = 4; // Promote to Knight
                 legal_move_list.Add(forward_move);
 
+                forward_move = new Move(piece_square, forward_sq);
                 forward_move.promote = 5; // Promote to Queen
                 legal_move_list.Add(forward_move);
             }
@@ -273,17 +283,21 @@ public class MoveGenerator
 
                     // Add end square and promotion if needed
                     if (diagonal_move.end_square.row%7 == 0) {
-                        diagonal_move.promote = 2; // Promote to Rook
-                        legal_move_list.Add(diagonal_move);
+                        diagonal_promotion_move = new Move(piece_square, diagonal_move.end_square);
+                        diagonal_promotion_move.promote = 2; // Promote to Rook
+                        legal_move_list.Add(diagonal_promotion_move);
 
-                        diagonal_move.promote = 3; // Promote to Bishop
-                        legal_move_list.Add(diagonal_move);
+                        diagonal_promotion_move = new Move(piece_square, diagonal_move.end_square);
+                        diagonal_promotion_move.promote = 3; // Promote to Bishop
+                        legal_move_list.Add(diagonal_promotion_move);
 
-                        diagonal_move.promote = 4; // Promote to Knight
-                        legal_move_list.Add(diagonal_move);
+                        diagonal_promotion_move = new Move(piece_square, diagonal_move.end_square);
+                        diagonal_promotion_move.promote = 4; // Promote to Knight
+                        legal_move_list.Add(diagonal_promotion_move);
 
-                        diagonal_move.promote = 5; // Promote to Queen
-                        legal_move_list.Add(diagonal_move);
+                        diagonal_promotion_move = new Move(piece_square, diagonal_move.end_square);
+                        diagonal_promotion_move.promote = 5; // Promote to Queen
+                        legal_move_list.Add(diagonal_promotion_move);
                     }
                     else {
                         legal_move_list.Add(diagonal_move);

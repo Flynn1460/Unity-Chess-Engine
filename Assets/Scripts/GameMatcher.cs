@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Collections.Generic;
 using ENGINE_NAMESPACE_Random;
+using ENGINE_NAMESPACE_Minimax_1;
 
 
 public class ConsoleUCIInterface
@@ -152,11 +153,13 @@ public class GameMatcher
 
     private CustomEngineInterface ENGINE_OBJ_stockfish = new CustomEngineInterface(@"C:/Users/flynn/OneDrive/Dokumentumok/Programming/Unity Projects/Chess Programming/Assets/Scripts/ENGINES/ENGINE_Stockfish/stockfish/stockfish.exe");
     private CustomEngineInterface ENGINE_OBJ_Random = new CustomEngineInterface(typeof(ENGINE_Random));
+    private CustomEngineInterface ENGINE_OBJ_Minimax_1 = new CustomEngineInterface(typeof(ENGINE_Minimax_1));
 
 
     public GameMatcher(int engine_movetime) {
         engine_refrence.Add(1, ENGINE_OBJ_stockfish);
         engine_refrence.Add(2, ENGINE_OBJ_Random);
+        engine_refrence.Add(3, ENGINE_OBJ_Minimax_1);
 
         move_time = engine_movetime;
     }
@@ -165,7 +168,7 @@ public class GameMatcher
     public void GetEngineMove(BoardManager bm) {
         // Convert Raw Engine Move move into a move object to be read into the board
         CustomEngineInterface current_engine = engine_refrence[bm.board.turn_id];
-        string raw_engine_move = current_engine.GetMoveFromEngine(bm.board, move_time);
+        string raw_engine_move = current_engine.GetMoveFromEngine(bm.board.copy(), move_time);
 
         if (raw_engine_move.Length == 4 || raw_engine_move[4] == ' ') raw_engine_move = raw_engine_move.Substring(0, 4);
         Move engine_move = new Move(bm.board, raw_engine_move); 
