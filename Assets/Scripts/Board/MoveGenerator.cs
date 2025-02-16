@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Unity.Collections;
 
 
 public class MoveGenerator
@@ -18,7 +17,7 @@ public class MoveGenerator
             if (filter_square != null && !filter_square.sq.SequenceEqual(piece_square.sq)) continue;
 
             switch(piece_square.piece_type) {
-                case 1: legal_moves.AddRange(GetPawnMoves(board, piece_square)); break;
+                case 1: legal_moves.AddRange(GetPawnMoves(board, piece_square, safe_search)); break;
                 case 2: legal_moves.AddRange(GetRookMoves(board, piece_square)); break;
                 case 3: legal_moves.AddRange(GetKnightMoves(board, piece_square)); break;
                 case 4: legal_moves.AddRange(GetBishopMoves(board, piece_square)); break;
@@ -57,6 +56,43 @@ public class MoveGenerator
 
         return false;
     }
+
+    public bool isSquareCheckLocked(Board board, bool check_search, Square attacked_square) {
+        List<Move> moves_for_square;
+        String attacked_square_str = attacked_square.str_uci();
+        
+
+        board.turn = !board.turn;
+        List<Square> x = GetFriendlySquares(board);
+
+
+        if (!check_search) {
+            foreach(Square piece_square in x) {
+                moves_for_square = new List<Move>();
+
+                switch(piece_square.piece_type) {
+                    case 1: moves_for_square = GetPawnMoves(board, piece_square, include_theory:true); break;
+                    case 2: moves_for_square = GetRookMoves(board, piece_square); break;
+                    case 3: moves_for_square = GetKnightMoves(board, piece_square); break;
+                    case 4: moves_for_square = GetBishopMoves(board, piece_square); break;
+                    case 5: moves_for_square = GetQueenMoves(board, piece_square); break;
+                    case 6: moves_for_square = GetKingMoves(board, piece_square, true); break;
+                }
+
+                foreach(Move pos_move in moves_for_square) {
+                    if (pos_move.end_square.str_uci() == attacked_square_str){
+                        board.turn = !board.turn;
+                        return true;
+                    }
+                } 
+            }
+        }
+        
+        board.turn = !board.turn;
+
+        return false;
+    }
+
 
 
     public String GenerateLegalPly(Board board_, int ply) {
@@ -150,7 +186,6 @@ public class MoveGenerator
         return false;
     }
 
-
     public bool isCheck(Board board) {
         int king_piece = board.turn ? 13 : 6;
         Square king_location = board.find_piece_location(king_piece);
@@ -158,24 +193,6 @@ public class MoveGenerator
         return isSquareAttacked(board, king_location);
     }
 
-    public bool isSquareCheckLocked(Board board, bool check_search, Square sq) {
-        board.turn = !board.turn;
-
-        if (!check_search) {
-            List<Move> legal_opp_moves = GenerateLegalMoves(board, safe_search:true);
-            
-            foreach(Move mv in legal_opp_moves) {
-                if (mv.end_square.str_uci() == sq.str_uci()) {
-                    board.turn = !board.turn;
-                    return true;
-                }
-            }
-        }
-        
-        board.turn = !board.turn;
-
-        return false;
-    }
 
 
     private List<Move> getDiscardedMoves(Board board, List<Move> legal_moves) {
@@ -223,7 +240,7 @@ public class MoveGenerator
     // ======================================================================
 
 
-    private List<Move> GetPawnMoves(Board board, Square piece_square) {
+    private List<Move> GetPawnMoves(Board board, Square piece_square, bool include_theory=false) {
         List<Move> legal_move_list = new List<Move>();
 
         int direction = piece_square.isWhite ? 1 : -1; // White moves up (+1), Black moves down (-1)
@@ -285,7 +302,7 @@ public class MoveGenerator
             if (IsInBounds(diagonal_move)) {
                 int captured_piece = diagonal_move.end_square.piece;
 
-                if (captured_piece != 0 && !IsFriendlyPiece(captured_piece, piece_square.isWhite)) {
+                if ((captured_piece != 0 && !IsFriendlyPiece(captured_piece, piece_square.isWhite)) || include_theory) {
 
                     // Add end square and promotion if needed
                     if (diagonal_move.end_square.row%7 == 0) {
@@ -375,7 +392,7 @@ public class MoveGenerator
             mv.is_castle_white_short = true;
             legal_move_list.Add(mv);
         }
-        if (!board.is_a1_rook_moved && !board.is_wking_moved && board.turn && board.b[0, 3] == 0 && board.b[0, 2] == 0 && board.b[0, 0]%7 == 2 && !isSquareCheckLocked(board, safe_search, new Square(board, "d1")) && !isSquareCheckLocked(board, safe_search, new Square(board, "e1"))) {
+        if (!board.is_a1_rook_moved && !board.is_wking_moved && board.turn && board.b[0, 3] == 0 && board.b[0, 2] == 0 && board.b[0, 1] == 0 && board.b[0, 0]%7 == 2 && !isSquareCheckLocked(board, safe_search, new Square(board, "d1")) && !isSquareCheckLocked(board, safe_search, new Square(board, "e1"))) {
             Move mv = new Move(board, "e1c1");
             mv.is_castle_white_long = true;
             legal_move_list.Add(mv);
@@ -386,7 +403,7 @@ public class MoveGenerator
             mv.is_castle_black_short = true;
             legal_move_list.Add(mv);
         }
-        if (!board.is_a8_rook_moved && !board.is_bking_moved && !board.turn && board.b[7, 3] == 0 && board.b[7, 2] == 0 && board.b[7, 0]%7 == 2 && !isSquareCheckLocked(board, safe_search, new Square(board, "d8")) && !isSquareCheckLocked(board, safe_search, new Square(board, "e8"))) {
+        if (!board.is_a8_rook_moved && !board.is_bking_moved && !board.turn && board.b[7, 3] == 0 && board.b[7, 2] == 0 && board.b[7, 1] == 0 && board.b[7, 0]%7 == 2 && !isSquareCheckLocked(board, safe_search, new Square(board, "d8")) && !isSquareCheckLocked(board, safe_search, new Square(board, "e8"))) {
             Move mv = new Move(board, "e8c8");
             mv.is_castle_black_long = true;
             legal_move_list.Add(mv);
