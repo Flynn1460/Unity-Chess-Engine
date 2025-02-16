@@ -1,6 +1,7 @@
 #pragma warning disable CS0219
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -15,6 +16,7 @@ public class GAME : MonoBehaviour
     [Range(0,3)][SerializeField] private int black_id;
     
     [SerializeField] private bool do_move_scan = false;
+
     [SerializeField] private bool auto_restart_game = false;
 
     [SerializeField] private string board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -31,7 +33,6 @@ public class GAME : MonoBehaviour
     private CONTROLLER_PieceSetup piece_setup;
     private CONTROLLER_Timer timer_controller;
 
-
     void RunLegalMoves() {
         int x = 0;
 
@@ -39,9 +40,11 @@ public class GAME : MonoBehaviour
 
         while (true) {
             x += 1;
-            Debug.Log(board_manager.move_generator.GenerateLegalPly(board_manager.board, x));
+            List<int> move_data = board_manager.move_generator.GenerateLegalPly(board_manager.board, x, move_breakdown:true);
+            Debug.Log(move_data[0] + " ¦ " + x + " ply   " + move_data[1] + "ms");
         }
     }
+
 
     void Awake() {   
         board_manager = new BoardManager();
@@ -54,7 +57,6 @@ public class GAME : MonoBehaviour
     }
 
     void Start() {
-        turn = !board_manager.board.turn;
         
         // Setup controllers
         timer_controller = FindFirstObjectByType<CONTROLLER_Timer>(); 
@@ -67,6 +69,8 @@ public class GAME : MonoBehaviour
         if (board_fen == "start") board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
         board_manager.board.set_fen(board_fen);
+        turn = !board_manager.board.turn;
+
         piece_setup.ClearPieces();
         piece_setup.SetupPieces(board_manager.board.b);
 

@@ -95,18 +95,17 @@ public class MoveGenerator
 
 
 
-    public String GenerateLegalPly(Board board_, int ply) {
+    public List<int> GenerateLegalPly(Board board_, int ply, bool move_breakdown=false) {
         Board board = board_.copy();
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        int running_move_total = PlyDepthSearcher(board, 1, ply);
+        int running_move_total = PlyDepthSearcher(board, 1, ply, move_breakdown);
 
-        String return_string = running_move_total + " ¦ " + ply + " ply    " + stopwatch.ElapsedMilliseconds.ToString() + "ms";
-        return return_string;
+        return new List<int>() {running_move_total, (int)stopwatch.ElapsedMilliseconds};
     }
 
-    private int PlyDepthSearcher(Board b, int ply, int max_ply) {
+    private int PlyDepthSearcher(Board b, int ply, int max_ply, bool breakdown) {
         List<Move> moves = GenerateLegalMoves(b);
 
         if (ply == max_ply){
@@ -120,14 +119,14 @@ public class MoveGenerator
         foreach(Move mv in moves) {
             b.move(mv, definate_move:true);
 
-            int x = PlyDepthSearcher(b, ply+1, max_ply);
-            if (ply == 1) y += (mv + " - " + (x)) + "\n";
+            int x = PlyDepthSearcher(b, ply+1, max_ply, breakdown);
+            if (ply == 1 && breakdown) y += (mv + " - " + (x)) + "\n";
             local_count += x;
 
             b.undo_move();
         }
 
-        if (ply == 1) UnityEngine.Debug.Log(y);
+        if (ply == 1 && breakdown) UnityEngine.Debug.Log(y);
 
         return local_count;
     }
@@ -198,17 +197,15 @@ public class MoveGenerator
     private List<Move> getDiscardedMoves(Board board, List<Move> legal_moves) {
         List<Move> removed_moves = new List<Move>();
 
-        //if (!safe_search) {
-            foreach (Move move in legal_moves) {
-                board.move(move);
+        foreach (Move move in legal_moves) {
+            board.move(move, definate_move:true);
 
-                if (isCheck(board)) {
-                    removed_moves.Add(move);
-                }
-
-                board.undo_move();
+            if (isCheck(board)) {
+                removed_moves.Add(move);
             }
-        //}
+
+            board.undo_move();
+        }
 
         return legal_moves.Except(removed_moves).ToList();
     }
@@ -266,7 +263,6 @@ public class MoveGenerator
 
             // Add forward move and set it as promotion square if needed
             if (forward_move.end_square.row%7 == 0) {
-
                 forward_move = new Move(piece_square, forward_sq);
                 forward_move.promote = board.turn ? 2 : 9; // Promote to Rook
                 legal_move_list.Add(forward_move);

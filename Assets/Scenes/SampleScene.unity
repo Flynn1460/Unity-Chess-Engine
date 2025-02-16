@@ -5829,9 +5829,9 @@ MonoBehaviour:
   engine_move_time: 1
   white_id: 0
   black_id: 0
-  do_move_scan: 1
+  do_move_scan: 0
   auto_restart_game: 0
-  board_fen: r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w Kkq - 2 1
+  board_fen: 5bk1/8/3P4/8/8/K7/8/8 w - - 0 1
 --- !u!114 &867577149
 MonoBehaviour:
   m_ObjectHideFlags: 0
