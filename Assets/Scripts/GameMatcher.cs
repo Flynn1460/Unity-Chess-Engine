@@ -175,6 +175,6 @@ public class GameMatcher
 
 
         // Print Engine Move
-        bm.board.move(engine_move, definate_move:true);
+        bm.board.move(engine_move);
     }    
 }

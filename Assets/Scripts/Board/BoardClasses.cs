@@ -3,6 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+
+public enum PieceType {
+    FRIENDLY = 1,
+    ENEMY = 2,
+    BOTH = 3,
+
+    WHITE = 4,
+    BLACK = 5
+}
+
+
 public class Square
 {
     public int col;
@@ -17,46 +28,44 @@ public class Square
 
     public Square(Board board, int col, int row) {
         try {
-            this.col = col;
-            this.row = row;
+        this.col = col;
+        this.row = row;
 
-            this.sq = new List<int>() {col, row};
-            
-            this.piece = board.b[row, col];
-            this.piece_type = piece % 7;
+        this.sq = new List<int>() {col, row};
+        
+        this.piece = board.b[row, col];
+        this.piece_type = piece % 7;
 
-            this.isWhite = (piece == piece_type);
+        this.isWhite = (piece == piece_type);
 
-            this.start_row = isWhite ? 1 : 6;
+        this.start_row = isWhite ? 1 : 6;
         }
         catch {}
     }
 
     public Square(Board board, string sq_name) {
         try {
-            char col_char = sq_name[0];
-            char row_char = sq_name[1];
+        char col_char = sq_name[0];
+        char row_char = sq_name[1];
 
-            int col_num = col_char - 'a'; // Cancels out ASCII offset and adds 1
-            int row_num = (int)Char.GetNumericValue(row_char) - 1;
+        int col_num = col_char - 'a'; // Cancels out ASCII offset and adds 1
+        int row_num = (int)Char.GetNumericValue(row_char) - 1;
 
-            this.col = col_num;
-            this.row = row_num;
+        this.col = col_num;
+        this.row = row_num;
 
-            this.sq = new List<int>() {col, row};
-            
-            this.piece = board.b[row, col];
-            this.piece_type = piece % 7;
+        this.sq = new List<int>() {col, row};
+        
+        this.piece = board.b[row, col];
+        this.piece_type = piece % 7;
 
-            this.isWhite = (piece == piece_type);
-
-            this.start_row = isWhite ? 1 : 6;
+        this.isWhite = (piece == piece_type);
+        this.start_row = isWhite ? 1 : 6;
         }
         catch {}
     }
 
-    public Square() {}
-
+    private Square() {}
     public Square copy() {
         return new Square()
         { 
@@ -70,16 +79,9 @@ public class Square
         };
     }
 
-    public override string ToString() {
-        return (char)('a' + col) + (row+1).ToString();
-    }
-
-    public string str_uci() {
-        return (char)('a' + col) + (row+1).ToString();
-    }
+    public override string ToString() {  return str_uci();  }
+    public string str_uci() {  return (char)('a' + col) + (row+1).ToString();  }
 }
-
-
 
 public class Move
 {
@@ -185,7 +187,6 @@ public class Move
         return (char)('a' + start_square.col) + (start_square.row+1).ToString() + (char)('a' + end_square.col) + (end_square.row+1).ToString();
     }
 }
-
 
 public class Board{
     public int[,] b = new int[8,8] {
@@ -381,11 +382,10 @@ public class Board{
     }
 
     // MOVEMENT
-    public void move(Move mv, bool flip_turn=true, bool definate_move=false) {
+    public void move(Move mv, bool flip_turn=true) {
         mv.board_before_move = (int[,])b.Clone();
         mv.before_board = copy();
 
-        // File, Rank, File, Rank
         try {
             if (mv.promote == -1) {
                 mv.replaced_piece = b[mv.end_square.row, mv.end_square.col];
@@ -395,7 +395,6 @@ public class Board{
         }
         catch {  Debug.LogWarning("Invalid Move passed : " + mv);  }
 
-        // Castle Bools
         // WHITE ROOKS
         if (mv.start_square.piece_type == 2 && !is_a1_rook_moved && (mv.start_square.sq).SequenceEqual(new List<int>() {0, 0})) {  is_a1_rook_moved = true; mv.mv_change_list.Add("a1r");  }
         if (mv.start_square.piece_type == 2 && !is_h1_rook_moved && (mv.start_square.sq).SequenceEqual(new List<int>() {7, 0})) {  is_h1_rook_moved = true; mv.mv_change_list.Add("h1r");  }
@@ -412,6 +411,7 @@ public class Board{
         if (mv.isEnpassant) {
             int forward_pawn_dir = turn ? -1 : 1;
             b[mv.end_square.row + forward_pawn_dir, mv.end_square.col] = 0;
+            mv.mv_change_list.Add("ep");
         }
 
         if (mv.str_uci() == "e1g1" && mv.start_square.piece_type == 6) {
@@ -436,7 +436,7 @@ public class Board{
             b[mv_.start_square.row, mv_.start_square.col] = 0;
         }
 
-        if (definate_move && mv.promote != -1) {
+        if (mv.promote != -1) {
             b[mv.end_square.row, mv.end_square.col] = mv.promote;
             b[mv.start_square.row, mv.start_square.col] = 0;
         }
@@ -453,31 +453,6 @@ public class Board{
 
     public void undo_move(bool flip_turn=true) {
         Move prev_mv = move_list[move_list.Count-1];
-        /*
-
-        if (flip_turn) {
-            move_list.RemoveAt(move_list.Count-1);
-
-            turn = !turn;
-
-            if (turn)  turn_id = white_id;
-            if (!turn) turn_id = black_id;
-        }
-
-        b = (int[,])prev_mv.board_before_move.Clone();
-
-        foreach(String change in prev_mv.mv_change_list) {
-            Debug.Log(change);
-            switch(change) {
-                case "a1r": is_a1_rook_moved = false; break;
-                case "a8r": is_a8_rook_moved = false; break;
-                case "h1r": is_h1_rook_moved = false; break;
-                case "h8r": is_h8_rook_moved = false; break;
-                case "wk" : is_wking_moved   = false; break;
-                case "bk" : is_bking_moved   = false; break;
-            }
-        }
-        */
 
         Board x = prev_mv.before_board.copy();
 

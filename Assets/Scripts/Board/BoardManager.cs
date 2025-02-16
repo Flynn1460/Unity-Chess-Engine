@@ -35,7 +35,7 @@ public class BoardManager
         // If move is pushed then highlighting isn't needed
         boardHighlighter.Reset_Tiles();
 
-        board.move(piece_move, definate_move:true);
+        board.move(piece_move);
     } 
 }
  
