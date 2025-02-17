@@ -63,7 +63,7 @@ public class CONTROLLER_Piece : MonoBehaviour
         int row = (int) Mathf.Round(transform.localPosition.y);
 
         Square start_square = new Square(bm.board, name);
-        Square end_square = new Square(bm.board, col, row);
+        Square end_square = new Square(bm.board.b, col, row);
         Move piece_move = new Move(start_square, end_square);
 
         int outcome = DroppedPiece(piece_move);

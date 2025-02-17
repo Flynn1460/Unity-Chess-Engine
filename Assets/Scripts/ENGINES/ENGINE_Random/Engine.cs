@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 
 namespace ENGINE_NAMESPACE_Random {
-
 public class Random_Engine {
     
     private MoveGenerator move_generator = new MoveGenerator();

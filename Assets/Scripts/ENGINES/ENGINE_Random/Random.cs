@@ -1,7 +1,6 @@
 using System;
 
 namespace ENGINE_NAMESPACE_Random {
-
 public class ENGINE_Random {
     /* 
     Name       :    ENGINE_Random

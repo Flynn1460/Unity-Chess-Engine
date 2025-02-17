@@ -1,7 +1,4 @@
-#pragma warning disable CS0219
-
 using System.Collections.Generic;
-using UnityEngine;
 
 public class BoardManager
 {
@@ -10,9 +7,6 @@ public class BoardManager
     public MoveGenerator move_generator = new MoveGenerator();
 
     private CONTROLLER_SquareHighlight boardHighlighter = new CONTROLLER_SquareHighlight();
-
-    // Textures
-    private Sprite queen_texture = Resources.Load<Sprite>("Chess/wq");
 
 
     public void Highlight_Piece_Moves(Square piece_square) {
@@ -34,7 +28,7 @@ public class BoardManager
 
         // If move is pushed then highlighting isn't needed
         boardHighlighter.Reset_Tiles();
-
+        
         board.move(piece_move);
     } 
 }

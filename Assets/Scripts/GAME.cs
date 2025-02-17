@@ -1,12 +1,9 @@
-#pragma warning disable CS0219
-
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.IO;
 using System.Diagnostics;
 
 public class GAME : MonoBehaviour
@@ -39,6 +36,8 @@ public class GAME : MonoBehaviour
     private Thread legal_test_thread;
 
     void RunLegalMoves() {
+        Thread.Sleep(1000);
+
         int x = 0;
 
         Board board = board_manager.board.copy();
@@ -54,6 +53,8 @@ public class GAME : MonoBehaviour
     }
 
     void RunLegalTest() {
+        Thread.Sleep(1000);
+
         List<FEN_TEST> fen_tests = new List<FEN_TEST>() {
             new FEN_TEST("Kiwipete", "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", new List<int>() {48, 2039, 97862}),
             new FEN_TEST("Endgame Pin", "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1", new List<int>() {14, 191, 2812, 43238, 674624}),
@@ -66,7 +67,6 @@ public class GAME : MonoBehaviour
         Stopwatch st = new Stopwatch();
         st.Start();
         
-
         foreach(FEN_TEST fen_test in fen_tests) {
             Board board = new Board();
             board.set_fen(fen_test.FEN);
@@ -76,18 +76,15 @@ public class GAME : MonoBehaviour
 
                 String mvs_e = fen_test.expected_output[i-1].ToString("N0");
                 String mvs_o = move_data[0].ToString("N0");
-
                 String nps = ((move_data[0] / move_data[1])*1000).ToString("N0");
-
                 String colour = (fen_test.expected_output[i-1] == move_data[0]) ? "<color=#59de81>" : "<color=#e35454>";
 
-                //UnityEngine.Debug.Log(fen_test.TestName+" EX:"+mvs_e+" RO:"+mvs_o + " ¦ " + i + " ply   " + move_data[1] + "ms  ¦ " + nps + " n/s");
                 UnityEngine.Debug.Log($"{colour}{fen_test.TestName}: {i}ply   [{mvs_e}:{mvs_o}]  {move_data[1]}ms  {nps} n/s  </color>");
             }
         }
-        String x = 324530632.ToString("N0");
-        UnityEngine.Debug.Log($"PLY TEST COMPLETE: {x} IN {st.ElapsedMilliseconds}ms");
+        UnityEngine.Debug.Log($"PLY TEST COMPLETE IN {st.ElapsedMilliseconds}ms");
     }
+
 
     void Awake() {   
         board_manager = new BoardManager();
@@ -99,8 +96,7 @@ public class GAME : MonoBehaviour
         board_manager.board.turn_id = white_id;
     }
 
-    void Start() {
-        
+    void Start() { 
         // Setup controllers
         timer_controller = FindFirstObjectByType<CONTROLLER_Timer>(); 
         piece_setup = FindFirstObjectByType<CONTROLLER_PieceSetup>();
@@ -108,7 +104,6 @@ public class GAME : MonoBehaviour
         timer_controller.change_timer(ALLOWED_TIME);
 
         // Setup Board
-
         if (board_fen == "start") board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
         board_manager.board.set_fen(board_fen);
@@ -119,6 +114,7 @@ public class GAME : MonoBehaviour
 
         legal_move_thread = new Thread(RunLegalMoves);
         legal_test_thread = new Thread(RunLegalTest);
+
         if (do_move_scan) legal_move_thread.Start();
         if (do_move_test) legal_test_thread.Start();
     }

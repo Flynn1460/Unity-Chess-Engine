@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace ENGINE_NAMESPACE_Minimax_1 {
-
 public class MinimaxEngine {
     
     private MoveGenerator move_generator = new MoveGenerator();

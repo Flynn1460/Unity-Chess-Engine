@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine;
 
 
+// ENUMS
 public enum PieceGroup {
     FRIENDLY = 1,
     ENEMY = 2,
@@ -20,6 +21,7 @@ public enum MBool {
 }
 
 
+// STRUCTS
 public struct FEN_TEST {
     public String TestName;
     public String FEN;
@@ -33,7 +35,8 @@ public struct FEN_TEST {
 }
 
 
-public class Square
+// CLASSES
+public struct Square
 {
     public int col;
     public int row;
@@ -45,25 +48,43 @@ public class Square
 
     public int start_row;
 
-    public Square(Board board, int col, int row) {
-        try {
+    public Square(int[,] board, int col, int row) {
         this.col = col;
         this.row = row;
 
         this.sq = new List<int>() {col, row};
         
-        this.piece = board.b[row, col];
+        try {
+            this.piece = board[row, col];
+            this.piece_type = piece % 7;
+
+            this.isWhite = (piece == piece_type);
+            this.start_row = isWhite ? 1 : 6;
+        }
+        catch {
+            this.piece = -1;
+            this.piece_type = -1;
+
+            this.isWhite = false;
+            this.start_row = -1;
+        }
+    }
+
+    public Square(int piece, int col, int row) {
+        this.col = col;
+        this.row = row;
+
+        this.sq = new List<int>() {col, row};
+        
+        this.piece = piece;
         this.piece_type = piece % 7;
 
         this.isWhite = (piece == piece_type);
 
         this.start_row = isWhite ? 1 : 6;
-        }
-        catch {}
     }
 
     public Square(Board board, string sq_name, MBool col_rep=MBool.N) {
-        try {
         char col_char = sq_name[0];
         char row_char = sq_name[1];
 
@@ -81,25 +102,13 @@ public class Square
         if (col_rep == MBool.N) this.isWhite = (piece == piece_type);
         if (col_rep == MBool.T) this.isWhite = board.turn;
         if (col_rep == MBool.F) this.isWhite = !board.turn;
+        else {  this.isWhite = board.turn;  }
 
         this.start_row = isWhite ? 1 : 6;
-        }
-        catch {}
     }
 
-    private Square() {}
-    public Square copy() {
-        return new Square()
-        { 
-            col = this.col,
-            row = this.row, 
-            sq = new List<int>(this.sq),
-            isWhite = this.isWhite, 
-            piece = this.piece, 
-            piece_type = this.piece_type,
-            start_row = this.start_row 
-        };
-    }
+
+    public Square copy() {  return new Square(this.piece, this.col, this.row);  }
 
     public override string ToString() {  return str_uci();  }
     public string str_uci() {  return (char)('a' + col) + (row+1).ToString();  }
@@ -121,16 +130,7 @@ public class Move
 
     public int promote = -1; // If number is set to a valid piece type then it is a promoting piece
     
-    public int[,] board_before_move = new int[8,8] {
-            { 2,  3,  4,  5,  6,  4,  3, 2 },
-            { 1,  1,  1,  1,  1,  1,  1, 1 },
-            { 0,  0,  0,  0,  0,  0,  0, 0 },
-            { 0,  0,  0,  0,  0,  0,  0, 0 },
-            { 0,  0,  0,  0,  0,  0,  0, 0 },
-            { 0,  0,  0,  0,  0,  0,  0, 0 },
-            { 8,  8,  8,  8,  8,  8,  8, 8 },
-            { 9, 10, 11, 12, 13, 11, 10, 9 }
-    };
+    public int[,] board_before_move;
 
     public Board before_board;
 
@@ -140,13 +140,13 @@ public class Move
     // DECLARATIONS
     public Move(Board board, int col1, int row1, int col2, int row2) {
         
-        start_square = new Square( board, col1, row1 );
-        end_square = new Square( board, col2, row2 );
+        start_square = new Square( board.b, col1, row1 );
+        end_square = new Square( board.b, col2, row2 );
     }
 
     public Move(Board board, Square start_square_, int col2, int row2) {
         start_square = start_square_;
-        end_square = new Square( board, col2, row2 );
+        end_square = new Square( board.b, col2, row2 );
     }
 
 
@@ -221,7 +221,7 @@ public class Board{
             { 8,  8,  8,  8,  8,  8,  8, 8 },
             { 9, 10, 11, 12, 13, 11, 10, 9 }
     };
-    private int[,] EMPTY_BOARD = new int[8,8] {
+    private readonly int[,] EMPTY_BOARD = new int[8,8] {
         { 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0 },
         { 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -232,18 +232,11 @@ public class Board{
         { 0, 0, 0, 0, 0, 0, 0, 0 }
     };
 
-    public bool turn = true;
     public List<Move> move_list = new List<Move>();
+    public bool turn = true;
     
     public int is_checkmate = 0;
     public bool is_draw = false;
-
-    /*
-    * -1 # BLACK WIN
-    *  0 # DRAW
-    *  1 # WHITE WIN
-    */
-    public int is_gameover = 0; 
 
     // Castling Items
     public bool is_a1_rook_moved = false;
@@ -261,9 +254,7 @@ public class Board{
 
     public string SetupFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-    private MoveGenerator move_generator = new MoveGenerator();
-
-
+    // Debug / Setup
     public void set_fen(string FEN) {
         SetupFen = FEN;
 
@@ -330,53 +321,6 @@ public class Board{
         }
     }
 
-
-    public Square find_piece_location(int piece) {
-        if (piece == 13) {
-            for (int r=7; r>=0; r--) {
-                for (int c=0; c<8; c++) {
-                    if (b[r, c] == piece) return new Square(this, c, r);
-                }
-            }
-        }
-
-        else {
-            for (int r=0; r<8;r++) {
-                for (int c=0; c<8; c++) {
-                    if (b[r, c] == piece) return new Square(this, c, r);
-                }
-            }
-        }
-
-        Debug.LogWarning("Board Piece Finder could not find piece : " + piece);
-        return null;
-    }
-
-    public void reset_board() {  b = EMPTY_BOARD;  }
-
-    public Board copy() {
-        Board board_cpy = new Board();
-
-        board_cpy.turn = turn;
-        board_cpy.is_checkmate = is_checkmate;
-        board_cpy.is_gameover = is_gameover;
-        board_cpy.is_a1_rook_moved = is_a1_rook_moved;
-        board_cpy.is_a8_rook_moved = is_a8_rook_moved;
-        board_cpy.is_h1_rook_moved = is_h1_rook_moved;
-        board_cpy.is_h8_rook_moved = is_h8_rook_moved;
-        board_cpy.is_wking_moved = is_wking_moved;
-        board_cpy.is_bking_moved = is_bking_moved;
-        board_cpy.white_id = white_id;
-        board_cpy.black_id = black_id;
-        board_cpy.turn_id = turn_id;
-        board_cpy.SetupFen = SetupFen;
-
-        board_cpy.b = (int[,])b.Clone();
-        board_cpy.move_list = new List<Move>(move_list);
-        
-        return board_cpy;
-    }
-
     public void PrintBoard(bool print_arbs=true)
     {
         string output = "";
@@ -404,10 +348,57 @@ public class Board{
         }
     }
 
+
+
+    public void reset_board() {  b = EMPTY_BOARD;  }
+
+    public Board copy() {
+        Board board_cpy = new Board();
+
+        board_cpy.turn = turn;
+        board_cpy.is_checkmate = is_checkmate;
+
+        board_cpy.is_a1_rook_moved = is_a1_rook_moved;
+        board_cpy.is_a8_rook_moved = is_a8_rook_moved;
+        board_cpy.is_h1_rook_moved = is_h1_rook_moved;
+        board_cpy.is_h8_rook_moved = is_h8_rook_moved;
+        board_cpy.is_wking_moved = is_wking_moved;
+        board_cpy.is_bking_moved = is_bking_moved;
+
+        board_cpy.white_id = white_id;
+        board_cpy.black_id = black_id;
+        board_cpy.turn_id = turn_id;
+
+        board_cpy.b = (int[,])b.Clone();
+        board_cpy.move_list = new List<Move>(move_list);
+        
+        return board_cpy;
+    }
+
+    public Square find_piece_location(int piece) {
+        if (piece == 13) {
+            for (int r=7; r>=0; r--) {
+                for (int c=0; c<8; c++) {
+                    if (b[r, c] == piece) return new Square(b, c, r);
+                }
+            }
+        }
+        else {
+            for (int r=0; r<8;r++) {
+                for (int c=0; c<8; c++) {
+                    if (b[r, c] == piece) return new Square(b, c, r);
+                }
+            }
+        }
+
+        Debug.LogWarning("Board Piece Finder could not find piece : " + piece);
+        return new Square(b, 0, 0);
+    }
+
+
     // MOVEMENT
     public void move(Move mv, bool flip_turn=true) {
         mv.board_before_move = (int[,])b.Clone();
-        mv.before_board = copy();
 
         try {
             if (mv.promote == -1) {

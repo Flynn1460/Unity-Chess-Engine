@@ -1,5 +1,3 @@
-#pragma warning disable CS0219
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,13 +7,13 @@ using System.Linq;
 public class MoveGenerator
 {
     // MOVE GENERATION
-    public List<Move> GenerateLegalMoves(Board board, Square filter_square=null, bool safe_search=false) {
+    public List<Move> GenerateLegalMoves(Board board, Square? filter_square=null, bool safe_search=false) {
         List<Move> legal_moves = new List<Move>();
         List<Square> piece_squares_for_turn = GetSquareType(board, PieceGroup.FRIENDLY);
 
         foreach(Square piece_square in piece_squares_for_turn) {
             // Check if you are only searching for a singular piece
-            if (filter_square != null && !filter_square.sq.SequenceEqual(piece_square.sq)) continue;
+            if (filter_square.HasValue && !filter_square.Value.sq.SequenceEqual(piece_square.sq)) continue;
 
             switch(piece_square.piece_type) {
                 case 1: legal_moves.AddRange(GetPawnMoves(board, piece_square, safe_search)); break;
@@ -183,7 +181,7 @@ public class MoveGenerator
             while (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board.b[newRow, newCol], piece_square.isWhite))
             {
                 if (board.b[newRow, newCol] != 0) {  // Stop at capture
-                    legal_moves.Add(  new Square(board, newCol, newRow)  );
+                    legal_moves.Add(  new Square(board.b, newCol, newRow)  );
                     break;
                 }; 
 
@@ -205,7 +203,7 @@ public class MoveGenerator
 
             if (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board.b[newRow, newCol], piece_square.isWhite))
             {
-                legal_moves.Add(  new Square(board, newCol, newRow)  );
+                legal_moves.Add(  new Square(board.b, newCol, newRow)  );
             }
         }
 
@@ -222,7 +220,7 @@ public class MoveGenerator
         for (int r=0; r<8; r++) {
             for (int c=0; c<8; c++) {
                 if ((black_focus && board.b[r,c] >= 7) || (white_focus && board.b[r,c] > 0 && board.b[r,c] < 7)) {
-                    type_squares.Add(new Square(board, c, r));
+                    type_squares.Add(new Square(board.b, c, r));
                 }
             }
         }
@@ -237,7 +235,7 @@ public class MoveGenerator
 
         int direction = piece_square.isWhite ? 1 : -1; // White moves up (+1), Black moves down (-1)
 
-        Square forward_sq = new Square(board, piece_square.col, piece_square.row + direction);
+        Square forward_sq = new Square(board.b, piece_square.col, piece_square.row + direction);
         Move forward_move = new Move(piece_square, forward_sq);
 
 
@@ -267,7 +265,7 @@ public class MoveGenerator
 
 
             // DOUBLE MOVE
-            Square double_forward_sq = new Square(board, piece_square.col, piece_square.row + (2*direction));
+            Square double_forward_sq = new Square(board.b, piece_square.col, piece_square.row + (2*direction));
             Move double_forward_move = new Move(piece_square, double_forward_sq);
 
             bool is_on_starting_square = double_forward_move.start_square.row == double_forward_move.start_square.start_row;
@@ -279,8 +277,8 @@ public class MoveGenerator
 
 
         // DIAGONAL MOVES
-        Square l_diagonal_sq = new Square(board, piece_square.col-1, piece_square.row+direction);
-        Square r_diagonal_sq = new Square(board, piece_square.col+1, piece_square.row+direction);
+        Square l_diagonal_sq = new Square(board.b, piece_square.col-1, piece_square.row+direction);
+        Square r_diagonal_sq = new Square(board.b, piece_square.col+1, piece_square.row+direction);
         
         Move l_diagonal_move = new Move(piece_square, l_diagonal_sq);
         Move r_diagonal_move = new Move(piece_square, r_diagonal_sq);
@@ -452,9 +450,8 @@ public class MoveGenerator
         return legal_move_list;
     }
 
-    private List<Move> AddSlidingMoves(Board board_, Square piece_square, (int, int)[] directions)
+    private List<Move> AddSlidingMoves(Board board, Square piece_square, (int, int)[] directions)
     {
-        int[,] board = board_.b;
         List<Move> legal_moves = new List<Move>();
 
         foreach (var (dRow, dCol) in directions)
@@ -462,11 +459,11 @@ public class MoveGenerator
             int newRow = piece_square.row + dRow;
             int newCol = piece_square.col + dCol;
 
-            while (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board[newRow, newCol], piece_square.isWhite))
+            while (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board.b[newRow, newCol], piece_square.isWhite))
             {
-                Move mv = new Move(board_, piece_square, newCol, newRow);
+                Move mv = new Move(board, piece_square, newCol, newRow);
                 legal_moves.Add(mv);
-                if (board[newRow, newCol] != 0) break; // Stop at capture
+                if (board.b[newRow, newCol] != 0) break; // Stop at capture
 
                 newRow += dRow;
                 newCol += dCol;
