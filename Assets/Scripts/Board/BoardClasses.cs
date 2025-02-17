@@ -4,13 +4,32 @@ using System.Linq;
 using UnityEngine;
 
 
-public enum PieceType {
+public enum PieceGroup {
     FRIENDLY = 1,
     ENEMY = 2,
     BOTH = 3,
 
     WHITE = 4,
     BLACK = 5
+}
+
+public enum MBool {
+    F = 0,
+    T = 1,
+    N = 2
+}
+
+
+public struct FEN_TEST {
+    public String TestName;
+    public String FEN;
+    public List<int> expected_output;
+
+    public FEN_TEST(String TestName_, String FEN_, List<int> expected_output_) {
+        TestName = TestName_;
+        FEN = FEN_;
+        expected_output = expected_output_;
+    }
 }
 
 
@@ -43,7 +62,7 @@ public class Square
         catch {}
     }
 
-    public Square(Board board, string sq_name) {
+    public Square(Board board, string sq_name, MBool col_rep=MBool.N) {
         try {
         char col_char = sq_name[0];
         char row_char = sq_name[1];
@@ -59,7 +78,10 @@ public class Square
         this.piece = board.b[row, col];
         this.piece_type = piece % 7;
 
-        this.isWhite = (piece == piece_type);
+        if (col_rep == MBool.N) this.isWhite = (piece == piece_type);
+        if (col_rep == MBool.T) this.isWhite = board.turn;
+        if (col_rep == MBool.F) this.isWhite = !board.turn;
+
         this.start_row = isWhite ? 1 : 6;
         }
         catch {}
@@ -325,7 +347,7 @@ public class Board{
                 }
             }
         }
-        
+
         Debug.LogWarning("Board Piece Finder could not find piece : " + piece);
         return null;
     }
@@ -358,6 +380,9 @@ public class Board{
     public void PrintBoard(bool print_arbs=true)
     {
         string output = "";
+
+        output += String.Join(" ", move_list) + "\n";
+
         for (int i = 0; i < b.GetLength(0); i++)
         {
             for (int j = 0; j < b.GetLength(1); j++)
@@ -377,8 +402,6 @@ public class Board{
             output += "H8 : " + is_h8_rook_moved + "\n";
             output += "\n";
         }
-
-        Debug.Log(output);
     }
 
     // MOVEMENT
@@ -451,26 +474,29 @@ public class Board{
         }
     }
 
+    
     public void undo_move(bool flip_turn=true) {
         Move prev_mv = move_list[move_list.Count-1];
 
-        Board x = prev_mv.before_board.copy();
+        if (flip_turn) {
+            move_list.RemoveAt(move_list.Count-1);
+            
+            turn = !turn;
 
-        turn = x.turn;
-        is_checkmate = x.is_checkmate;
-        is_gameover = x.is_gameover;
-        is_a1_rook_moved = x.is_a1_rook_moved;
-        is_a8_rook_moved = x.is_a8_rook_moved;
-        is_h1_rook_moved = x.is_h1_rook_moved;
-        is_h8_rook_moved = x.is_h8_rook_moved;
-        is_wking_moved = x.is_wking_moved;
-        is_bking_moved = x.is_bking_moved;
-        white_id = x.white_id;
-        black_id = x.black_id;
-        turn_id = x.turn_id;
-        SetupFen = x.SetupFen;
+            if (turn)  turn_id = white_id;
+            if (!turn) turn_id = black_id;
+        }
+        
+        foreach(String change in prev_mv.mv_change_list) {
+            if (change == "a1r") {  is_a1_rook_moved = false;  }
+            if (change == "a8r") {  is_a8_rook_moved = false;  }
+            if (change == "h1r") {  is_h1_rook_moved = false;  }
+            if (change == "h8r") {  is_h8_rook_moved = false;  }
+            if (change == "wk" ) {  is_wking_moved = false;    }
+            if (change == "bk" ) {  is_bking_moved = false;    }
+        }     
 
-        b = (int[,])x.b.Clone();
-        move_list = new List<Move>(x.move_list);
+        b = (int[,])prev_mv.board_before_move.Clone();
+        return;
     }
 }

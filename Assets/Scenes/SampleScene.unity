@@ -5828,10 +5828,10 @@ MonoBehaviour:
   ALLOWED_TIME: 6774
   engine_move_time: 1
   white_id: 0
-  black_id: 0
-  do_move_scan: 0
+  black_id: 3
+  do_move_scan: 1
   auto_restart_game: 0
-  board_fen: 5bk1/8/3P4/8/8/K7/8/8 w - - 0 1
+  board_fen: 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1
 --- !u!114 &867577149
 MonoBehaviour:
   m_ObjectHideFlags: 0
