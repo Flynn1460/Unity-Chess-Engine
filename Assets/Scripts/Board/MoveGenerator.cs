@@ -13,7 +13,7 @@ public class MoveGenerator
 
         foreach(Square piece_square in piece_squares_for_turn) {
             // Check if you are only searching for a singular piece
-            if (filter_square.HasValue && !filter_square.Value.sq.SequenceEqual(piece_square.sq)) continue;
+            if (filter_square.HasValue && filter_square.Value.sq != piece_square.sq) continue;
 
             switch(piece_square.piece_type) {
                 case 1: legal_moves.AddRange(GetPawnMoves(board, piece_square, safe_search)); break;
@@ -32,20 +32,15 @@ public class MoveGenerator
     public bool isSquareAttacked(Board board, Square attacked_square, bool check_search=false) {
         String attacked_square_str = attacked_square.str_uci();
         List<Move> moves_for_square;
-        List<Square> piece_squares;
 
         if (!check_search) {
 
-            piece_squares = GetKingLiabilities(board, attacked_square);  
-
-            foreach(Square piece_square in piece_squares) {
+            List<Square> dia_liab = GetDiagonalLiabilities(board, attacked_square);  
+            foreach(Square piece_square in dia_liab) {
                 switch(piece_square.piece_type) {
+                    case 4: return true;
+                    case 5: return true;
                     case 1: moves_for_square = GetPawnMoves(board, piece_square, include_theory:true); break;
-                    case 2: moves_for_square = GetRookMoves(board, piece_square); break;
-                    case 3: moves_for_square = GetKnightMoves(board, piece_square); break;
-                    case 4: moves_for_square = GetBishopMoves(board, piece_square); break;
-                    case 5: moves_for_square = GetQueenMoves(board, piece_square); break;
-                    case 6: moves_for_square = GetKingMoves(board, piece_square, true); break;
                     default: moves_for_square = new List<Move>(); break;
                 }
 
@@ -54,6 +49,18 @@ public class MoveGenerator
                         return true;
                     }
                 } 
+            }
+
+            List<Square> str_liab = GetStraightLiabilities(board, attacked_square);  
+            foreach(Square piece_square in str_liab) {
+                if (piece_square.piece_type == 2 || piece_square.piece_type == 5) {
+                    return true;
+                }
+            }
+
+            List<Square> kni_liab = GetKnightLiabilities(board, attacked_square);  
+            foreach(Square piece_square in kni_liab) {
+                if (piece_square.piece_type == 3) return true;
             }
         }
 
@@ -168,10 +175,10 @@ public class MoveGenerator
 
 
     // Square Filtering
-    private List<Square> GetKingLiabilities(Board board, Square piece_square) {
+    private List<Square> GetStraightLiabilities(Board board, Square piece_square) {
         List<Square> legal_moves = new List<Square>();
 
-        (int, int)[] directions = {(1, 1), (1, 0), (1, -1), (0, -1), (-1, -1), (-1, 0), (-1, 1), (0, 1)};
+        (int, int)[] directions = {(1, 0), (0, -1), (-1, 0), (0, 1)};
 
         foreach (var (dRow, dCol) in directions)
         {
@@ -190,6 +197,36 @@ public class MoveGenerator
             }
         }
 
+        return legal_moves;
+    }
+    
+    private List<Square> GetDiagonalLiabilities(Board board, Square piece_square) {
+        List<Square> legal_moves = new List<Square>();
+
+        (int, int)[] directions = {(1, 1), (1, -1), (-1, -1), (-1, 1)};
+
+        foreach (var (dRow, dCol) in directions)
+        {
+            int newRow = piece_square.row + dRow;
+            int newCol = piece_square.col + dCol;
+
+            while (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board.b[newRow, newCol], piece_square.isWhite))
+            {
+                if (board.b[newRow, newCol] != 0) {  // Stop at capture
+                    legal_moves.Add(  new Square(board.b, newCol, newRow)  );
+                    break;
+                }; 
+
+                newRow += dRow;
+                newCol += dCol;
+            }
+        }
+
+        return legal_moves;
+    }
+    
+    private List<Square> GetKnightLiabilities(Board board, Square piece_square) {
+        List<Square> legal_moves = new List<Square>();
         int[][] move_pattern = new[] {
             new[] { -2, -1 }, new[] { -2, 1 },
             new[] { -1, -2 }, new[] { -1, 2 },
@@ -209,6 +246,7 @@ public class MoveGenerator
 
         return legal_moves;
     }
+    
 
     private List<Square> GetSquareType(Board board, PieceGroup p_type) {
         List<Square> type_squares = new List<Square>();

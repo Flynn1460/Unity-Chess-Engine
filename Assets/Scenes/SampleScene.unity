@@ -1472,7 +1472,7 @@ GameObject:
   - component: {fileID: 224360984}
   - component: {fileID: 224360985}
   m_Layer: 0
-  m_Name: B2
+  m_Name: B1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5830,8 +5830,9 @@ MonoBehaviour:
   white_id: 0
   black_id: 3
   do_move_scan: 1
+  do_move_test: 0
   auto_restart_game: 0
-  board_fen: 8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1
+  board_fen: start
 --- !u!114 &867577149
 MonoBehaviour:
   m_ObjectHideFlags: 0

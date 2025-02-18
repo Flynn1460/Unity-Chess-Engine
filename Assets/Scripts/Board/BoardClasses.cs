@@ -34,47 +34,45 @@ public struct FEN_TEST {
     }
 }
 
-
-// CLASSES
 public struct Square
 {
-    public int col;
-    public int row;
-    public List<int> sq;
+    public readonly int col;
+    public readonly int row;
+    public readonly (int, int) sq;
 
-    public bool isWhite;
-    public int piece;
-    public int piece_type;
+    public readonly bool isWhite;
+    public readonly int piece;
+    public readonly int piece_type;
 
-    public int start_row;
+    public readonly int start_row;
 
     public Square(int[,] board, int col, int row) {
         this.col = col;
         this.row = row;
 
-        this.sq = new List<int>() {col, row};
+        this.sq = (col, row);
         
-        try {
-            this.piece = board[row, col];
-            this.piece_type = piece % 7;
-
-            this.isWhite = (piece == piece_type);
-            this.start_row = isWhite ? 1 : 6;
-        }
-        catch {
-            this.piece = -1;
-            this.piece_type = -1;
-
-            this.isWhite = false;
-            this.start_row = -1;
-        }
+    if (row >= 0 && row < board.GetLength(0) && col >= 0 && col < board.GetLength(1))
+    {
+        this.piece = board[row, col];
+        this.piece_type = piece % 7;
+        this.isWhite = (piece == piece_type);
+        this.start_row = isWhite ? 1 : 6;
+    }
+    else
+    {
+        this.piece = -1;
+        this.piece_type = -1;
+        this.isWhite = false;
+        this.start_row = -1;
+    }
     }
 
     public Square(int piece, int col, int row) {
         this.col = col;
         this.row = row;
 
-        this.sq = new List<int>() {col, row};
+        this.sq = (col, row);
         
         this.piece = piece;
         this.piece_type = piece % 7;
@@ -94,9 +92,14 @@ public struct Square
         this.col = col_num;
         this.row = row_num;
 
-        this.sq = new List<int>() {col, row};
-        
-        this.piece = board.b[row, col];
+        this.sq = (col, row);
+        try {
+            this.piece = board.b[row, col];
+        }
+        catch {
+            this.piece = 0;
+            Debug.Log("ERROR : " + row + ", " + col);
+        }
         this.piece_type = piece % 7;
 
         if (col_rep == MBool.N) this.isWhite = (piece == piece_type);
@@ -114,6 +117,8 @@ public struct Square
     public string str_uci() {  return (char)('a' + col) + (row+1).ToString();  }
 }
 
+
+// CLASSES
 public class Move
 {
     public Square start_square;
@@ -132,9 +137,7 @@ public class Move
     
     public int[,] board_before_move;
 
-    public Board before_board;
-
-    public List<String> mv_change_list = new List<String>();
+    public string[] mv_change_list = new string[2];
 
 
     // DECLARATIONS
@@ -160,8 +163,8 @@ public class Move
     public Move(Board board, string uci_string) {
         if (uci_string != null) {
 
-            start_square = new Square( board, uci_string.Substring(0, 2) );
-            end_square = new Square( board, uci_string.Substring(2, 2) );
+            start_square = new Square( board, $"{uci_string[0]}{uci_string[1]}" );
+            end_square = new Square( board, $"{uci_string[2]}{uci_string[3]} )" );
 
             if (uci_string.Length == 5) {
                 if (uci_string[4] == 'r' && board.turn ) promote = 2; 
@@ -180,9 +183,9 @@ public class Move
     }
 
 
-
+    public Move() {}
     public Move copy() {
-        Move move_cpy = new Move(null, "a1a1");
+        Move move_cpy = new Move();
 
         move_cpy.start_square = start_square.copy();
         move_cpy.end_square = end_square.copy();
@@ -400,32 +403,36 @@ public class Board{
     public void move(Move mv, bool flip_turn=true) {
         mv.board_before_move = (int[,])b.Clone();
 
-        try {
+        // IF VALID MOVE
+        if (mv.start_square.row <= 7 && mv.start_square.row >= 0 && mv.start_square.col <= 7 && mv.start_square.col >= 0 &&
+            mv.end_square.row   <= 7 && mv.end_square.row   >= 0 && mv.end_square.col   <= 7 && mv.end_square.col   >= 0) {
+
             if (mv.promote == -1) {
                 mv.replaced_piece = b[mv.end_square.row, mv.end_square.col];
                 b[mv.end_square.row, mv.end_square.col] = b[mv.start_square.row, mv.start_square.col];
                 b[mv.start_square.row, mv.start_square.col] = 0;
             }
         }
-        catch {  Debug.LogWarning("Invalid Move passed : " + mv);  }
+        else {  Debug.LogWarning("Invalid Move Passed");  }
+
 
         // WHITE ROOKS
-        if (mv.start_square.piece_type == 2 && !is_a1_rook_moved && (mv.start_square.sq).SequenceEqual(new List<int>() {0, 0})) {  is_a1_rook_moved = true; mv.mv_change_list.Add("a1r");  }
-        if (mv.start_square.piece_type == 2 && !is_h1_rook_moved && (mv.start_square.sq).SequenceEqual(new List<int>() {7, 0})) {  is_h1_rook_moved = true; mv.mv_change_list.Add("h1r");  }
+        if (mv.start_square.piece_type == 2 && !is_a1_rook_moved && mv.start_square.sq == (0, 0)) {  is_a1_rook_moved = true; mv.mv_change_list[0] = "a1r";  }
+        if (mv.start_square.piece_type == 2 && !is_h1_rook_moved && mv.start_square.sq == (7, 0)) {  is_h1_rook_moved = true; mv.mv_change_list[0] = "h1r";  }
         
         // BLACK ROOKS
-        if (mv.start_square.piece_type == 2 && !is_a8_rook_moved && (mv.start_square.sq).SequenceEqual(new List<int>() {0, 7})) {  is_a8_rook_moved = true; mv.mv_change_list.Add("a8r");  }
-        if (mv.start_square.piece_type == 2 && !is_h8_rook_moved && (mv.start_square.sq).SequenceEqual(new List<int>() {7, 7})) {  is_h8_rook_moved = true; mv.mv_change_list.Add("h8r");  }
+        if (mv.start_square.piece_type == 2 && !is_a8_rook_moved && mv.start_square.sq == (0, 7)) {  is_a8_rook_moved = true; mv.mv_change_list[0] = "a8r";  }
+        if (mv.start_square.piece_type == 2 && !is_h8_rook_moved && mv.start_square.sq == (7, 7)) {  is_h8_rook_moved = true; mv.mv_change_list[0] = "h8r";  }
         
         // KINGS
-        if (mv.start_square.piece_type == 6 && !is_wking_moved && (mv.start_square.sq).SequenceEqual(new List<int>() {4, 0})) {   is_wking_moved = true; mv.mv_change_list.Add("wk");  }
-        if (mv.start_square.piece_type == 6 && !is_bking_moved && (mv.start_square.sq).SequenceEqual(new List<int>() {4, 7})) {   is_bking_moved = true; mv.mv_change_list.Add("bk");  }
+        if (mv.start_square.piece_type == 6 && !is_wking_moved && mv.start_square.sq == (4, 0)) {   is_wking_moved = true; mv.mv_change_list[0] = "wk";  }
+        if (mv.start_square.piece_type == 6 && !is_bking_moved && mv.start_square.sq == (4, 7)) {   is_bking_moved = true; mv.mv_change_list[0] = "bk";  }
 
         // Special Mvs
         if (mv.isEnpassant) {
             int forward_pawn_dir = turn ? -1 : 1;
             b[mv.end_square.row + forward_pawn_dir, mv.end_square.col] = 0;
-            mv.mv_change_list.Add("ep");
+            mv.mv_change_list[1] = "ep";
         }
 
         if (mv.str_uci() == "e1g1" && mv.start_square.piece_type == 6) {

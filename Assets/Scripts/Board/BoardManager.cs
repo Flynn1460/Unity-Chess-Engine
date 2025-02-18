@@ -18,13 +18,14 @@ public class BoardManager
     }
 
     public void Push(Move piece_move, int pawn_promote_piece=-1){
-        List<int> old_position = piece_move.start_square.sq;
-        List<int> new_position = piece_move.end_square.sq;
+        (int old_row, int old_col) = piece_move.start_square.sq;
+        (int new_row, int new_col) = piece_move.end_square.sq;
+        
         // If replace piece is set to something make piece otherwise use what was at the position
-        int piece = pawn_promote_piece == -1 ? board.b[old_position[0], old_position[1]] : pawn_promote_piece;
+        int piece = pawn_promote_piece == -1 ? board.b[old_row, old_col] : pawn_promote_piece;
 
-        if (piece == 1 && new_position[0] == 7) board.b[new_position[0], new_position[1]] = 5; // WHITE QUEEN PROMO
-        if (piece == 8 && new_position[0] == 0) board.b[new_position[0], new_position[1]] = 12; // BLACK QUEEN PROMO
+        if (piece == 1 && new_row == 7) board.b[new_row, new_col] = 5; // WHITE QUEEN PROMO
+        if (piece == 8 && new_row == 0) board.b[new_row, new_col] = 12; // BLACK QUEEN PROMO
 
         // If move is pushed then highlighting isn't needed
         boardHighlighter.Reset_Tiles();
