@@ -5829,7 +5829,7 @@ MonoBehaviour:
   engine_move_time: 1
   white_id: 0
   black_id: 3
-  do_move_scan: 1
+  do_move_scan: 0
   do_move_test: 0
   auto_restart_game: 0
   board_fen: start

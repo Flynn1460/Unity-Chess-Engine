@@ -34,7 +34,6 @@ public class MoveGenerator
         List<Move> moves_for_square;
 
         if (!check_search) {
-
             List<Square> dia_liab = GetDiagonalLiabilities(board, attacked_square);  
             foreach(Square piece_square in dia_liab) {
                 switch(piece_square.piece_type) {
@@ -227,16 +226,16 @@ public class MoveGenerator
     
     private List<Square> GetKnightLiabilities(Board board, Square piece_square) {
         List<Square> legal_moves = new List<Square>();
-        int[][] move_pattern = new[] {
-            new[] { -2, -1 }, new[] { -2, 1 },
-            new[] { -1, -2 }, new[] { -1, 2 },
-            new[] { 1, -2 }, new[] { 1, 2 },
-            new[] { 2, -1 }, new[] { 2, 1 }
+        (int, int)[] move_pattern = {
+            ( -2, -1 ), ( -2, 1 ),
+            ( -1, -2 ), ( -1, 2 ),
+            ( 1, -2 ), ( 1, 2 ),
+            ( 2, -1 ), ( 2, 1 )
         };
 
-        foreach (int[] move in move_pattern) {
-            int newRow = piece_square.row + move[0];
-            int newCol = piece_square.col + move[1];
+        foreach (var (dRow, dCol) in move_pattern) {
+            int newRow = piece_square.row + dRow;
+            int newCol = piece_square.col + dCol;
 
             if (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board.b[newRow, newCol], piece_square.isWhite))
             {
@@ -313,7 +312,7 @@ public class MoveGenerator
             }
         }
 
-
+        
         // DIAGONAL MOVES
         Square l_diagonal_sq = new Square(board.b, piece_square.col-1, piece_square.row+direction);
         Square r_diagonal_sq = new Square(board.b, piece_square.col+1, piece_square.row+direction);

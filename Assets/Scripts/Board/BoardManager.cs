@@ -17,19 +17,8 @@ public class BoardManager
         }
     }
 
-    public void Push(Move piece_move, int pawn_promote_piece=-1){
-        (int old_row, int old_col) = piece_move.start_square.sq;
-        (int new_row, int new_col) = piece_move.end_square.sq;
-        
-        // If replace piece is set to something make piece otherwise use what was at the position
-        int piece = pawn_promote_piece == -1 ? board.b[old_row, old_col] : pawn_promote_piece;
-
-        if (piece == 1 && new_row == 7) board.b[new_row, new_col] = 5; // WHITE QUEEN PROMO
-        if (piece == 8 && new_row == 0) board.b[new_row, new_col] = 12; // BLACK QUEEN PROMO
-
-        // If move is pushed then highlighting isn't needed
+    public void Push(Move piece_move){
         boardHighlighter.Reset_Tiles();
-        
         board.move(piece_move);
     } 
 }
