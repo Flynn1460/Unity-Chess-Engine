@@ -15,15 +15,33 @@ public class GAME : MonoBehaviour
     [Range(0,3)][SerializeField] private int white_id;
     [Range(0,3)][SerializeField] private int black_id;
     
+    [SerializeField] private string board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+    [Header("TEST SETTINGS")]
     [SerializeField] private bool do_move_scan = false;
     [SerializeField] private bool do_move_test = false;
     [SerializeField] private bool auto_restart_game = false;
+    [SerializeField] private bool clear_console = false;
 
-    [SerializeField] private string board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    [Header("GAME SUITE")]
+    [SerializeField] private bool DO_SUITE = false;
+    private (int, int, int) RUNNING_GAMES = (0, 0, 0);
+    private int current_game_num = 0;
+    private bool suite_turn;
+    
+    [SerializeField] private int ENGINE_1 = 0;
+    [SerializeField] private int ENGINE_2 = 0;
+
+    [SerializeField] private int GAME_NUM = 0;
+
 
     // Board
     public BoardManager board_manager;
     private GameMatcher gamematcher;
+
+    private SpriteRenderer bg;
+    private Color32 norm_colour = new Color32(98, 106, 105, 255);
+    private Color32 test_colour = new Color32(38, 113, 103, 255);
 
     private bool turn;
     private bool isGameOver = false;
@@ -90,8 +108,14 @@ public class GAME : MonoBehaviour
         board_manager = new BoardManager();
         gamematcher = new GameMatcher(engine_move_time);
 
-        board_manager.board.white_id = white_id;
-        board_manager.board.black_id = black_id;
+        if (DO_SUITE) {
+            board_manager.board.white_id = ENGINE_1;
+            board_manager.board.black_id = ENGINE_2;
+        }
+        else{
+            board_manager.board.white_id = white_id;
+            board_manager.board.black_id = black_id;
+        }
 
         board_manager.board.turn_id = white_id;
     }
@@ -101,29 +125,40 @@ public class GAME : MonoBehaviour
         timer_controller = FindFirstObjectByType<CONTROLLER_Timer>(); 
         piece_setup = FindFirstObjectByType<CONTROLLER_PieceSetup>();
 
+        bg = GameObject.Find("Panel").GetComponent<SpriteRenderer>();
+        
+        if (DO_SUITE) bg.color = test_colour;
+        else          bg.color = norm_colour;
+
         timer_controller.change_timer(ALLOWED_TIME);
 
-        // Setup Board
-        if (board_fen == "start") board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        if (DO_SUITE) {
+            SUITE_START();
+        }
+        else {
+            // Setup Board
+            if (board_fen == "start") board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-        board_manager.board.set_fen(board_fen);
-        turn = !board_manager.board.turn;
+            board_manager.board.set_fen(board_fen);
+            turn = !board_manager.board.turn;
 
-        piece_setup.ClearPieces();
-        piece_setup.SetupPieces(board_manager.board.b);
+            piece_setup.ClearPieces();
+            piece_setup.SetupPieces(board_manager.board.b);
 
-        legal_move_thread = new Thread(RunLegalMoves);
-        legal_test_thread = new Thread(RunLegalTest);
+            legal_move_thread = new Thread(RunLegalMoves);
+            legal_test_thread = new Thread(RunLegalTest);
 
-        if (do_move_scan) legal_move_thread.Start();
-        if (do_move_test) legal_test_thread.Start();
+            if (do_move_scan) legal_move_thread.Start();
+            if (do_move_test) legal_test_thread.Start();
+        }
     }
-
 
     void Update() {
         if (isGameOver) return;
 
-        if (board_manager.board.turn != turn) {
+        if (DO_SUITE) SUITE_UPDATE();
+
+        if (board_manager.board.turn != turn && !DO_SUITE) {
             piece_setup.ClearPieces();
             piece_setup.SetupPieces(board_manager.board.b);
 
@@ -132,15 +167,87 @@ public class GAME : MonoBehaviour
 
             if (board_manager.board.is_draw) {  GameOver(0); return;  }
             if (board_manager.board.is_checkmate != 0 || timer_controller.IS_TIMEOUT) {  GameOver(board_manager.board.is_checkmate); return;  }
-        
-            turn = board_manager.board.turn;
+
+            turn = !turn;
             timer_controller.flip_turn(turn);
 
             if (board_manager.board.turn_id > 0) {
-                gamematcher.GetEngineMove(board_manager);
+                Move EngineMove = gamematcher.GetEngineMove(board_manager);
+                board_manager.board.move(EngineMove);
             }
         }
     }
+
+
+    void SUITE_START() {
+        if (current_game_num >= GAME_NUM) {
+            UnityEngine.Debug.Log("SUITE FINISHED");
+            (int wins, int draws, int losses) = RUNNING_GAMES;
+
+            String e1_col = ((losses*-1)+(wins)) > 0 ? "#59de81" : "#e35454";
+            String e2_col = ((wins*-1)+(losses)) > 0 ? "#59de81" : "#e35454";
+
+            if (wins == losses) {
+                e1_col = "yellow";
+                e2_col = "yellow";
+            }
+
+            UnityEngine.Debug.Log("RESULTS\n\n<color="+e1_col+">ENGINE 1: "+wins+", "+draws+","+losses+"</color>\n<color="+e2_col+">ENGINE 2: "+losses+", "+draws+","+wins+"</color>\n\n");
+        
+            DO_SUITE = false;
+            Application.Quit();
+        }
+
+        UnityEngine.Debug.Log("GAME: "+current_game_num + " ¦  EN1: " + RUNNING_GAMES);
+        current_game_num++;
+
+        // Setup Board
+        Awake();
+
+        timer_controller.change_timer(ALLOWED_TIME);
+
+        if (board_fen == "start") board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+        board_manager.board.set_fen(board_fen);
+        suite_turn = !board_manager.board.turn;
+
+        piece_setup.ClearPieces();
+        piece_setup.SetupPieces(board_manager.board.b);
+    }
+
+    void SUITE_UPDATE() {
+        if (board_manager.board.turn != suite_turn) {
+            piece_setup.ClearPieces();
+            piece_setup.SetupPieces(board_manager.board.b);
+
+            board_manager.board.is_checkmate = board_manager.move_generator.isCheckmate(board_manager.board);
+            board_manager.board.is_draw = board_manager.move_generator.isDraw(board_manager.board);
+
+            if (board_manager.board.is_draw) {  GameOver_SUITE(0); return;  }
+            if (board_manager.board.is_checkmate != 0 || timer_controller.IS_TIMEOUT) {  GameOver_SUITE(board_manager.board.is_checkmate); return;  }
+
+            suite_turn = !suite_turn;
+            timer_controller.flip_turn(suite_turn);
+
+            if (board_manager.board.turn_id > 0) {
+                Move EngineMove = gamematcher.GetEngineMove(board_manager);
+                board_manager.board.move(EngineMove);
+            }
+        }
+    }
+
+    void GameOver_SUITE(int state) {
+        (int losses, int draws, int wins) = RUNNING_GAMES;
+
+        if (state == 1 ) wins++;
+        if (state == 0 ) draws++;
+        if (state == -1) losses++;
+
+        RUNNING_GAMES = (losses, draws, wins);
+
+        SUITE_START();
+    }
+
 
     void GameOver(int state) {
         if (state == 1 ) UnityEngine.Debug.Log("WHITE CHECKMATE");
@@ -155,9 +262,11 @@ public class GAME : MonoBehaviour
     public void RestartButton_PRESSED() {
         legal_move_thread.Abort();
 
-        Type logEntries = Type.GetType("UnityEditor.LogEntries, UnityEditor");
-        MethodInfo clearMethod = logEntries?.GetMethod("Clear", BindingFlags.Static | BindingFlags.Public);
-        clearMethod?.Invoke(null, null);
+        if (clear_console) {
+            Type logEntries = Type.GetType("UnityEditor.LogEntries, UnityEditor");
+            MethodInfo clearMethod = logEntries?.GetMethod("Clear", BindingFlags.Static | BindingFlags.Public);
+            clearMethod?.Invoke(null, null);
+        }
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }

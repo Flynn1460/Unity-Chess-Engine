@@ -3651,7 +3651,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.38572443, g: 0.41509432, b: 0.41059408, a: 1}
+  m_Color: {r: 0.41451585, g: 0.4245283, b: 0.4231933, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -5826,13 +5826,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ALLOWED_TIME: 6774
-  engine_move_time: 1
-  white_id: 0
-  black_id: 3
+  engine_move_time: 100
+  white_id: 3
+  black_id: 2
+  board_fen: start
   do_move_scan: 0
   do_move_test: 0
   auto_restart_game: 0
-  board_fen: start
+  clear_console: 0
+  DO_SUITE: 1
+  ENGINE_1: 2
+  ENGINE_2: 3
+  GAME_NUM: 100
 --- !u!114 &867577149
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -163,16 +163,12 @@ public class GameMatcher
     }
 
 
-    public void GetEngineMove(BoardManager bm) {
+    public Move GetEngineMove(BoardManager bm) {
         // Convert Raw Engine Move move into a move object to be read into the board
         CustomEngineInterface current_engine = engine_refrence[bm.board.turn_id];
         string raw_engine_move = current_engine.GetMoveFromEngine(bm.board.copy(), move_time);
 
         if (raw_engine_move.Length == 4 || raw_engine_move[4] == ' ') raw_engine_move = raw_engine_move.Substring(0, 4);
-        Move engine_move = new Move(bm.board, raw_engine_move); 
-
-
-        // Print Engine Move
-        bm.board.move(engine_move);
+        return new Move(bm.board, raw_engine_move); 
     }    
 }

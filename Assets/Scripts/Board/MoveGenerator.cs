@@ -40,6 +40,7 @@ public class MoveGenerator
                     case 4: return true;
                     case 5: return true;
                     case 1: moves_for_square = GetPawnMoves(board, piece_square, include_theory:true); break;
+                    case 6: moves_for_square = GetKingMoves(board, piece_square, safe_search:true); break;
                     default: moves_for_square = new List<Move>(); break;
                 }
 
@@ -52,8 +53,20 @@ public class MoveGenerator
 
             List<Square> str_liab = GetStraightLiabilities(board, attacked_square);  
             foreach(Square piece_square in str_liab) {
-                if (piece_square.piece_type == 2 || piece_square.piece_type == 5) {
+                if (piece_square.piece_type == 2 || piece_square.piece_type == 5 ) {
                     return true;
+                }
+                switch(piece_square.piece_type) {
+                    case 6: 
+                        moves_for_square = GetKingMoves(board, piece_square, safe_search:true); 
+                        foreach(Move pos_move in moves_for_square) {
+                            if (pos_move.end_square.str_uci() == attacked_square_str) {
+                                return true;
+                            }
+                        } 
+                        break;
+
+                    default: break;
                 }
             }
 
@@ -121,9 +134,8 @@ public class MoveGenerator
     }
 
     public bool isDraw(Board board_) {
-        board_.turn = !board_.turn;
-        if (isCheck(board_)) return false;
-        board_.turn = !board_.turn;
+        if (isCheck(board_, true)) return false;
+        
         Board board = board_.copy();
 
         List<int> wp = new List<int>();
@@ -138,20 +150,62 @@ public class MoveGenerator
             }
         }
 
-
+        // Just Kings
         if ((wp.Contains(6) && wp.Count == 1) && (bp.Contains(13) && bp.Count == 1)) return true;
+        
+        // White Bishop & Black King
         if ((wp.Contains(6) && wp.Contains(4) && wp.Count == 2) && (bp.Contains(13) && bp.Count == 1)) return true;
-        if ((wp.Contains(6) && wp.Count == 1) && (bp.Contains(13) && bp.Contains(11) && bp.Count == 2)) return true;
 
-        List<Move> moves = GenerateLegalMoves(board, safe_search:true);
+        // Black Bishop & White King
+        if ((wp.Contains(6) && wp.Count == 1) && (bp.Contains(13) && bp.Contains(11) && bp.Count == 2)) return true;
+        
+        // White Knight & Black King
+        if ((wp.Contains(6) && wp.Contains(3) && wp.Count == 2) && (bp.Contains(13) && bp.Count == 1)) return true;
+
+        // Black Knight & White King
+        if ((wp.Contains(6) && wp.Count == 1) && (bp.Contains(13) && bp.Contains(10) && bp.Count == 2)) return true;
+
+        int reached_times = 1;
+        int x = 0;
+        foreach(Move prev_mv in board.move_list) {
+            x++;
+            if (board.isEqualToBoard(prev_mv.board_before_move)) {
+                // UnityEngine.Debug.Log(board.move_list.Count + " : " + x);
+                reached_times++;
+            }
+
+            if (reached_times == 3) {
+                return true;
+            }
+        }
+
+        List<Move> moves = GenerateLegalMoves(board);
+        // board.PrintBoard();
+
+        if (board.move_list.Count > 50) {
+            Move old_mv = board.move_list[board_.move_list.Count - 51];
+            Move new_mv = board.move_list[board_.move_list.Count -  1];
+
+            List<int> oldSq = GetPieceTypes(old_mv.board_before_move, board.turn, PieceGroup.BOTH);
+            List<int> newSq = GetPieceTypes( new_mv.board_before_move, board.turn, PieceGroup.BOTH);
+
+            if (oldSq.SequenceEqual(newSq)) {
+                return true;
+            }
+        }   
+
         if (moves.Count == 0) return true;
 
         return false;
     }
 
-    public bool isCheck(Board board) {
+    public bool isCheck(Board board, bool flip_turn=false) {
+        if (flip_turn) board.turn = !board.turn;
+
         int king_piece = board.turn ? 13 : 6;
         Square king_location = board.find_piece_location(king_piece);
+
+        if (flip_turn) board.turn = !board.turn;
         
         return isSquareAttacked(board, king_location);
     }
@@ -162,9 +216,7 @@ public class MoveGenerator
         foreach (Move move in legal_moves) {
             board.move(move);
 
-            if (isCheck(board)) {
-                removed_moves.Add(move);
-            }
+            if (isCheck(board))  removed_moves.Add(move);
 
             board.undo_move();
         }
@@ -265,6 +317,23 @@ public class MoveGenerator
         return type_squares;
     }
 
+    private List<int> GetPieceTypes(int[,] board, bool turn, PieceGroup p_type) {
+        List<int> type_squares = new List<int>();
+
+        bool white_focus = (p_type == PieceGroup.FRIENDLY && turn ) || (p_type == PieceGroup.ENEMY && !turn) || (p_type == PieceGroup.BOTH)|| (p_type == PieceGroup.WHITE);
+        bool black_focus = (p_type == PieceGroup.FRIENDLY && !turn) || (p_type == PieceGroup.ENEMY && turn ) || (p_type == PieceGroup.BOTH)|| (p_type == PieceGroup.BLACK);
+
+        // Get squares
+        for (int r=0; r<8; r++) {
+            for (int c=0; c<8; c++) {
+                if ((black_focus && board[r,c] >= 7) || (white_focus && board[r,c] > 0 && board[r,c] < 7)) {
+                    type_squares.Add(board[r,c]);
+                }
+            }
+        }
+
+        return type_squares;
+    }
 
     // Hard Work Moves
     private List<Move> GetPawnMoves(Board board, Square piece_square, bool include_theory=false) {

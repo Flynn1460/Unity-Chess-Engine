@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 
@@ -131,7 +130,7 @@ public class Move
     public bool is_castle_black_short = false;
     public bool is_castle_black_long = false;
 
-    public int replaced_piece = 0;
+    public int replaced_piece;
     
 
     public int promote = -1; // If number is set to a valid piece type then it is a promoting piece
@@ -139,9 +138,11 @@ public class Move
     public int[,] board_before_move;
     public (int, int) wking_pos;
     public (int, int) bking_pos;
-    
 
-    public string[] mv_change_list = new string[2];
+    // First two for generic move, next two for castling or en passant
+    public int[] board_mv_changes = new int[4];
+
+    public string changed_castle_bool;
 
 
     // DECLARATIONS
@@ -353,6 +354,8 @@ public class Board{
             output += "\n"; // New line after each row
         }
 
+        output += "TURN : " + turn;
+
         if (print_arbs) {
             output += "\n";
             output += "WK : " + is_wking_moved + "\n";
@@ -363,8 +366,9 @@ public class Board{
             output += "H8 : " + is_h8_rook_moved + "\n";
             output += "\n";
         }
-    }
 
+        Debug.Log(output);
+    }
 
 
     public void reset_board() {  b = EMPTY_BOARD;  }
@@ -421,7 +425,6 @@ public class Board{
 
     // MOVEMENT
     public void move(Move mv, bool flip_turn=true) {
-
         // IF VALID MOVE
         if (mv.start_square.row <= 7 && mv.start_square.row >= 0 && mv.start_square.col <= 7 && mv.start_square.col >= 0 &&
             mv.end_square.row   <= 7 && mv.end_square.row   >= 0 && mv.end_square.col   <= 7 && mv.end_square.col   >= 0) {
@@ -430,14 +433,12 @@ public class Board{
         mv.wking_pos = wking_pos;
         mv.bking_pos = bking_pos;
 
-        // Special Mvs
-        if (mv.isEnpassant) {
-            int forward_pawn_dir = turn ? -1 : 1;
-            b[mv.end_square.row + forward_pawn_dir, mv.end_square.col] = 0;
-            mv.mv_change_list[1] = "ep";
-        }
-
         if (mv.promote == -1) {
+            if (mv.isEnpassant) {
+                int forward_pawn_dir = turn ? -1 : 1;
+                b[mv.end_square.row + forward_pawn_dir, mv.end_square.col] = 0;
+            }
+
             mv.replaced_piece = b[mv.end_square.row, mv.end_square.col];
             b[mv.end_square.row, mv.end_square.col] = b[mv.start_square.row, mv.start_square.col];
             b[mv.start_square.row, mv.start_square.col] = 0;
@@ -461,11 +462,11 @@ public class Board{
 
         // ROOKS
         if (mv.start_square.piece_type == 2) {
-            if (!is_a1_rook_moved && mv.start_square.sq == (0, 0)) {  is_a1_rook_moved = true; mv.mv_change_list[0] = "a1r"; mv_flip_turn(mv, flip_turn); return;  }
-            if (!is_h1_rook_moved && mv.start_square.sq == (7, 0)) {  is_h1_rook_moved = true; mv.mv_change_list[0] = "h1r"; mv_flip_turn(mv, flip_turn); return;  }
+            if (!is_a1_rook_moved && mv.start_square.sq == (0, 0)) {  is_a1_rook_moved = true; mv.changed_castle_bool = "a1r"; mv_flip_turn(mv, flip_turn); return;  }
+            if (!is_h1_rook_moved && mv.start_square.sq == (7, 0)) {  is_h1_rook_moved = true; mv.changed_castle_bool = "h1r"; mv_flip_turn(mv, flip_turn); return;  }
             
-            if (!is_a8_rook_moved && mv.start_square.sq == (0, 7)) {  is_a8_rook_moved = true; mv.mv_change_list[0] = "a8r"; mv_flip_turn(mv, flip_turn); return;  }
-            if (!is_h8_rook_moved && mv.start_square.sq == (7, 7)) {  is_h8_rook_moved = true; mv.mv_change_list[0] = "h8r"; mv_flip_turn(mv, flip_turn); return;  }
+            if (!is_a8_rook_moved && mv.start_square.sq == (0, 7)) {  is_a8_rook_moved = true; mv.changed_castle_bool = "a8r"; mv_flip_turn(mv, flip_turn); return;  }
+            if (!is_h8_rook_moved && mv.start_square.sq == (7, 7)) {  is_h8_rook_moved = true; mv.changed_castle_bool = "h8r"; mv_flip_turn(mv, flip_turn); return;  }
             
             mv_flip_turn(mv, flip_turn); 
             return;
@@ -473,8 +474,8 @@ public class Board{
 
 
         // KINGS
-        if (!is_wking_moved && mv.start_square.sq == (4, 0)) {   is_wking_moved = true; mv.mv_change_list[0] = "wk";  }
-        if (!is_bking_moved && mv.start_square.sq == (4, 7)) {   is_bking_moved = true; mv.mv_change_list[0] = "bk";  }
+        if (!is_wking_moved && mv.start_square.sq == (4, 0)) {   is_wking_moved = true; mv.changed_castle_bool = "wk";  }
+        if (!is_bking_moved && mv.start_square.sq == (4, 7)) {   is_bking_moved = true; mv.changed_castle_bool = "bk";  }
 
         String king_move = mv.str_uci();
 
@@ -528,7 +529,6 @@ public class Board{
         mv_flip_turn(mv, flip_turn);
     }
 
-    
     public void undo_move(bool flip_turn=true) {
         Move prev_mv = move_list[move_list.Count-1];
 
@@ -541,14 +541,14 @@ public class Board{
             if (!turn) turn_id = black_id;
         }
         
-        foreach(String change in prev_mv.mv_change_list) {
-            if (change == "a1r") {  is_a1_rook_moved = false;  }
-            if (change == "a8r") {  is_a8_rook_moved = false;  }
-            if (change == "h1r") {  is_h1_rook_moved = false;  }
-            if (change == "h8r") {  is_h8_rook_moved = false;  }
-            if (change == "wk" ) {  is_wking_moved = false;    }
-            if (change == "bk" ) {  is_bking_moved = false;    }
-        }     
+        if (prev_mv.changed_castle_bool != null) {
+            if (prev_mv.changed_castle_bool == "a1r") {  is_a1_rook_moved = false;  }
+            if (prev_mv.changed_castle_bool == "a8r") {  is_a8_rook_moved = false;  }
+            if (prev_mv.changed_castle_bool == "h1r") {  is_h1_rook_moved = false;  }
+            if (prev_mv.changed_castle_bool == "h8r") {  is_h8_rook_moved = false;  }
+            if (prev_mv.changed_castle_bool == "wk" ) {  is_wking_moved = false;    }
+            if (prev_mv.changed_castle_bool == "bk" ) {  is_bking_moved = false;    } 
+        }
 
         b = (int[,])prev_mv.board_before_move.Clone();
         
@@ -556,7 +556,6 @@ public class Board{
         bking_pos = prev_mv.bking_pos;
         return;
     }
-
 
     private void mv_flip_turn(Move mv, bool flip_turn) {
         if (!flip_turn) return;
@@ -566,5 +565,21 @@ public class Board{
 
         if (turn)  turn_id = white_id;
         if (!turn) turn_id = black_id;
+    }
+
+    public bool isEqualToBoard(int[,] other_board)
+    {
+        for (int i = 0; i < b.GetLength(0); i++)
+        {
+            for (int j = 0; j < b.GetLength(1); j++)
+            {
+                if (b[i, j] != other_board[i, j])
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
