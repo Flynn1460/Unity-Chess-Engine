@@ -5,6 +5,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Diagnostics;
+using System.IO;
 
 public class GAME : MonoBehaviour
 {
@@ -25,14 +26,19 @@ public class GAME : MonoBehaviour
 
     [Header("GAME SUITE")]
     [SerializeField] private bool DO_SUITE = false;
-    private (int, int, int) RUNNING_GAMES = (0, 0, 0);
-    private int current_game_num = 0;
-    private bool suite_turn;
     
     [SerializeField] private int ENGINE_1 = 0;
     [SerializeField] private int ENGINE_2 = 0;
 
+    [SerializeField] private String ENGINE_1_NAME = "";
+    [SerializeField] private String ENGINE_2_NAME = "";
+
     [SerializeField] private int GAME_NUM = 0;
+
+    private List<String> GAMES_MOVE_LIST = new List<String>();
+    private (int, int, int) RUNNING_GAMES = (0, 0, 0);
+    private int current_game_num = 0;
+    private bool suite_turn;
 
 
     // Board
@@ -47,7 +53,7 @@ public class GAME : MonoBehaviour
     private bool isGameOver = false;
 
     // Game Controller Objects
-    private CONTROLLER_PieceSetup piece_setup;
+    private PieceManager piece_setup;
     private CONTROLLER_Timer timer_controller;
 
     private Thread legal_move_thread;
@@ -103,7 +109,7 @@ public class GAME : MonoBehaviour
         UnityEngine.Debug.Log($"PLY TEST COMPLETE IN {st.ElapsedMilliseconds}ms");
     }
 
-
+    // Standard Start
     void Awake() {   
         board_manager = new BoardManager();
         gamematcher = new GameMatcher(engine_move_time);
@@ -118,12 +124,17 @@ public class GAME : MonoBehaviour
         }
 
         board_manager.board.turn_id = white_id;
+
+        legal_move_thread = new Thread(RunLegalMoves);
+        legal_test_thread = new Thread(RunLegalTest);
     }
+
+    // NORMAL GAME
 
     void Start() { 
         // Setup controllers
         timer_controller = FindFirstObjectByType<CONTROLLER_Timer>(); 
-        piece_setup = FindFirstObjectByType<CONTROLLER_PieceSetup>();
+        piece_setup = FindFirstObjectByType<PieceManager>();
 
         bg = GameObject.Find("Panel").GetComponent<SpriteRenderer>();
         
@@ -144,9 +155,6 @@ public class GAME : MonoBehaviour
 
             piece_setup.ClearPieces();
             piece_setup.SetupPieces(board_manager.board.b);
-
-            legal_move_thread = new Thread(RunLegalMoves);
-            legal_test_thread = new Thread(RunLegalTest);
 
             if (do_move_scan) legal_move_thread.Start();
             if (do_move_test) legal_test_thread.Start();
@@ -178,6 +186,17 @@ public class GAME : MonoBehaviour
         }
     }
 
+    void GameOver(int state, bool print_output=true) {
+        if (state == 1  && print_output) UnityEngine.Debug.Log("WHITE CHECKMATE");
+        if (state == 0  && print_output) UnityEngine.Debug.Log("DRAW");
+        if (state == -1 && print_output) UnityEngine.Debug.Log("BLACK CHECKMATE");
+
+        isGameOver = true;
+
+        if (auto_restart_game) RestartButton_PRESSED();
+    }
+
+    // SUITE TESTING
 
     void SUITE_START() {
         if (current_game_num >= GAME_NUM) {
@@ -192,27 +211,43 @@ public class GAME : MonoBehaviour
                 e2_col = "yellow";
             }
 
-            UnityEngine.Debug.Log("RESULTS\n\n<color="+e1_col+">ENGINE 1: "+wins+", "+draws+","+losses+"</color>\n<color="+e2_col+">ENGINE 2: "+losses+", "+draws+","+wins+"</color>\n\n");
-        
-            DO_SUITE = false;
-            Application.Quit();
+            UnityEngine.Debug.Log($"RESULTS\n\n<color={e1_col}>{ENGINE_1_NAME}: {wins}, {draws},{losses}</color>\n<color={e2_col}>{ENGINE_2_NAME}: {losses}, {draws},{wins}</color>\n\n");
+            
+            String log_file = "./Assets/Scripts/ENGINE_LOGS/suite_logs.txt";
+
+            String time = DateTime.Now.ToString("dd-MM-yy HH:mm:ss");
+
+            String content = $"\n\n=============================\n\nSUITE TEST: {time}\n\n{ENGINE_1_NAME}: {wins}W, {draws}D, {losses}L\n{ENGINE_2_NAME}: {losses}W, {draws}D, {wins}L\n\n";
+
+            int game=0;
+
+
+            foreach(String GAME_MV in GAMES_MOVE_LIST) {
+                game++;
+
+                content += $"\n{game}.  " + String.Join(" ", GAME_MV);
+            }
+
+            File.AppendAllText(log_file, content);
+            GameOver(0, print_output:false);
         }
+        else {
+            current_game_num++;
+            UnityEngine.Debug.Log("GAME: "+current_game_num + " ¦  EN1: " + RUNNING_GAMES);
 
-        UnityEngine.Debug.Log("GAME: "+current_game_num + " ¦  EN1: " + RUNNING_GAMES);
-        current_game_num++;
+            // Setup Board
+            Awake();
 
-        // Setup Board
-        Awake();
+            timer_controller.change_timer(ALLOWED_TIME);
 
-        timer_controller.change_timer(ALLOWED_TIME);
+            if (board_fen == "start") board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-        if (board_fen == "start") board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            board_manager.board.set_fen(board_fen);
+            suite_turn = !board_manager.board.turn;
 
-        board_manager.board.set_fen(board_fen);
-        suite_turn = !board_manager.board.turn;
-
-        piece_setup.ClearPieces();
-        piece_setup.SetupPieces(board_manager.board.b);
+            piece_setup.ClearPieces();
+            piece_setup.SetupPieces(board_manager.board.b);
+        }
     }
 
     void SUITE_UPDATE() {
@@ -245,20 +280,13 @@ public class GAME : MonoBehaviour
 
         RUNNING_GAMES = (losses, draws, wins);
 
+        GAMES_MOVE_LIST.Add(String.Join(" ", board_manager.board.move_list));
+
         SUITE_START();
     }
 
 
-    void GameOver(int state) {
-        if (state == 1 ) UnityEngine.Debug.Log("WHITE CHECKMATE");
-        if (state == 0 ) UnityEngine.Debug.Log("DRAW");
-        if (state == -1) UnityEngine.Debug.Log("BLACK CHECKMATE");
-
-        isGameOver = true;
-
-        if (auto_restart_game) RestartButton_PRESSED();
-    }
-
+    // EXTERNAL FUNCTIONS
     public void RestartButton_PRESSED() {
         legal_move_thread.Abort();
 
@@ -267,6 +295,7 @@ public class GAME : MonoBehaviour
             MethodInfo clearMethod = logEntries?.GetMethod("Clear", BindingFlags.Static | BindingFlags.Public);
             clearMethod?.Invoke(null, null);
         }
+
 
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }

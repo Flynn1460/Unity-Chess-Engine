@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CONTROLLER_PieceSetup : MonoBehaviour
+public class PieceManager : MonoBehaviour
 {
     [Header("Piece Prefabs")]
     [SerializeField] private GameObject WP;

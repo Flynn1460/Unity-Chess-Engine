@@ -5837,7 +5837,9 @@ MonoBehaviour:
   DO_SUITE: 1
   ENGINE_1: 2
   ENGINE_2: 3
-  GAME_NUM: 100
+  ENGINE_1_NAME: Random
+  ENGINE_2_NAME: Terrible Minimax
+  GAME_NUM: 6
 --- !u!114 &867577149
 MonoBehaviour:
   m_ObjectHideFlags: 0
