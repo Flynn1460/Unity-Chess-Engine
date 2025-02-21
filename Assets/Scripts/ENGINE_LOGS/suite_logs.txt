@@ -2,8 +2,8 @@
 
 =============================
 
-SUITE TEST: 21-02-25 16:47:02
+SUITE TEST: 21-02-25 18:05:30
 
-Random: 0W, 17D, 83L
-Minimax 1: 83W, 17D, 0L
+Minimax 1: 0W, 5D, 0L
+Random: 0W, 5D, 0L
 

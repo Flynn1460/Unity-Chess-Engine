@@ -1,6 +1,6 @@
 using System;
 
-namespace ENGINE_NAMESPACE_Minimax_1 {
+namespace ENGINE_NAMESPACE_Minimax_V1 {
 
 public class Eval {
     private Random rn = new Random();

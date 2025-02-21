@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading;
 using System.Collections.Generic;
 using ENGINE_NAMESPACE_Random;
-using ENGINE_NAMESPACE_Minimax_1;
+using ENGINE_NAMESPACE_Minimax_V1;
 using System.Threading.Tasks;
 
 
@@ -157,7 +157,7 @@ public class GameMatcher
 
     private CustomEngineInterface ENGINE_OBJ_stockfish = new CustomEngineInterface("Stockfish 17", @"C:/Users/flynn/OneDrive/Dokumentumok/Programming/Unity Projects/Chess Programming/Assets/Scripts/ENGINES/ENGINE_Stockfish/stockfish/stockfish.exe");
     private CustomEngineInterface ENGINE_OBJ_Random = new CustomEngineInterface("Random", typeof(ENGINE_Random));
-    private CustomEngineInterface ENGINE_OBJ_Minimax_1 = new CustomEngineInterface("Minimax 1", typeof(ENGINE_Minimax_1));
+    private CustomEngineInterface ENGINE_OBJ_Minimax_1 = new CustomEngineInterface("Minimax 1", typeof(ENGINE_Minimax_V1));
 
 
     public GameMatcher(BoardManager board_manager, int engine_movetime) {

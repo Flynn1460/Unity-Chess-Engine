@@ -13,8 +13,8 @@ public class GAME : MonoBehaviour
     [SerializeField] private int ALLOWED_TIME = 180;
     [SerializeField] private int engine_move_time = 100;
 
-    [Range(0,3)][SerializeField] private int white_id;
-    [Range(0,3)][SerializeField] private int black_id;
+    [Range(0,4)][SerializeField] private int white_id;
+    [Range(0,4)][SerializeField] private int black_id;
     
     [SerializeField] private string board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
