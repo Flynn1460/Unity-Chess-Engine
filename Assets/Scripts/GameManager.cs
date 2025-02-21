@@ -5,6 +5,7 @@ using System.Threading;
 using System.Collections.Generic;
 using ENGINE_NAMESPACE_Random;
 using ENGINE_NAMESPACE_Minimax_1;
+using System.Threading.Tasks;
 
 
 public class ConsoleUCIInterface
@@ -102,12 +103,16 @@ public class CustomEngineInterface {
     private ConsoleUCIInterface uci_engine;
     private object engine_class;
 
-    public CustomEngineInterface(Type engine_class_name) {
+    public String display_name;
+
+    public CustomEngineInterface(String display_name_, Type engine_class_name) {
         engine_class = Activator.CreateInstance(engine_class_name);
+        display_name = display_name_;  
     }
 
-    public CustomEngineInterface(String engine_path_) {
+    public CustomEngineInterface(String display_name_, String engine_path_) {
         uci_engine = new ConsoleUCIInterface(engine_path_);
+        display_name = display_name_;
     }
 
     public String GetMoveFromEngine(Board b, int movetime=100) {
@@ -145,30 +150,52 @@ public class CustomEngineInterface {
 
 public class GameMatcher
 {
+    private BoardManager bm;
+
     private Dictionary<int, CustomEngineInterface> engine_refrence = new Dictionary<int, CustomEngineInterface>();
     private int move_time;
 
+    private CustomEngineInterface ENGINE_OBJ_stockfish = new CustomEngineInterface("Stockfish 17", @"C:/Users/flynn/OneDrive/Dokumentumok/Programming/Unity Projects/Chess Programming/Assets/Scripts/ENGINES/ENGINE_Stockfish/stockfish/stockfish.exe");
+    private CustomEngineInterface ENGINE_OBJ_Random = new CustomEngineInterface("Random", typeof(ENGINE_Random));
+    private CustomEngineInterface ENGINE_OBJ_Minimax_1 = new CustomEngineInterface("Minimax 1", typeof(ENGINE_Minimax_1));
 
-    private CustomEngineInterface ENGINE_OBJ_stockfish = new CustomEngineInterface(@"C:/Users/flynn/OneDrive/Dokumentumok/Programming/Unity Projects/Chess Programming/Assets/Scripts/ENGINES/ENGINE_Stockfish/stockfish/stockfish.exe");
-    private CustomEngineInterface ENGINE_OBJ_Random = new CustomEngineInterface(typeof(ENGINE_Random));
-    private CustomEngineInterface ENGINE_OBJ_Minimax_1 = new CustomEngineInterface(typeof(ENGINE_Minimax_1));
 
-
-    public GameMatcher(int engine_movetime) {
+    public GameMatcher(BoardManager board_manager, int engine_movetime) {
         engine_refrence.Add(1, ENGINE_OBJ_stockfish);
         engine_refrence.Add(2, ENGINE_OBJ_Random);
         engine_refrence.Add(3, ENGINE_OBJ_Minimax_1);
+
+        bm = board_manager;
 
         move_time = engine_movetime;
     }
 
 
-    public Move GetEngineMove(BoardManager bm) {
-        // Convert Raw Engine Move move into a move object to be read into the board
-        CustomEngineInterface current_engine = engine_refrence[bm.board.turn_id];
-        string raw_engine_move = current_engine.GetMoveFromEngine(bm.board.copy(), move_time);
+    public async void GetEngineMove() {
+        Move engine_move = await GetEngineMoveAsync();
 
-        if (raw_engine_move.Length == 4 || raw_engine_move[4] == ' ') raw_engine_move = raw_engine_move.Substring(0, 4);
-        return new Move(bm.board, raw_engine_move); 
+        if (engine_move.str_uci() == "(-1o-1") {
+            UnityEngine.Debug.LogWarning("STOCKFISH ERROR");
+            UnityEngine.Debug.Log(bm.move_generator.isDraw(bm.board));
+            UnityEngine.Debug.Log(bm.move_generator.isCheckmate(bm.board));
+            return;
+        }
+
+        bm.board.move( engine_move ); 
     }    
+
+    public async Task<Move> GetEngineMoveAsync()
+    {
+        CustomEngineInterface current_engine = engine_refrence[bm.board.turn_id];
+
+        string raw_engine_move = await Task.Run(() => current_engine.GetMoveFromEngine(bm.board.copy(), move_time));
+
+        if (raw_engine_move.Length == 4 || raw_engine_move[4] == ' ') 
+            raw_engine_move = raw_engine_move.Substring(0, 4);
+
+        return new Move(bm.board, raw_engine_move);
+    }
+
+
+    public String GetName(int engine_code) {  return engine_refrence[engine_code].display_name;  }
 }

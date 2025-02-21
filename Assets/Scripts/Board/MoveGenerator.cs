@@ -116,11 +116,12 @@ public class MoveGenerator
         return local_count;
     }
 
-
     // End Game Cases
     public int isCheckmate(Board board_) {
+        if (!isCheck(board_, true)) return 0;
+
         Board board = board_.copy();
-        List<Move> playable_moves = GenerateLegalMoves(board, safe_search:true);
+        List<Move> playable_moves = GenerateLegalMoves(board);
 
         foreach(Move playable_move in playable_moves) {
             board.move(playable_move);
@@ -179,8 +180,6 @@ public class MoveGenerator
             }
         }
 
-        List<Move> moves = GenerateLegalMoves(board);
-        // board.PrintBoard();
 
         if (board.move_list.Count > 50) {
             Move old_mv = board.move_list[board_.move_list.Count - 51];
@@ -194,9 +193,23 @@ public class MoveGenerator
             }
         }   
 
-        if (moves.Count == 0) return true;
+        List<Move> moves = new List<Move>();
+        List<Square> piece_squares_for_turn = GetSquareType(board, PieceGroup.FRIENDLY);
+        foreach(Square piece_square in piece_squares_for_turn) {
 
-        return false;
+            switch(piece_square.piece_type) {
+                case 1: moves = GetPawnMoves(board, piece_square, false); break;
+                case 2: moves = GetRookMoves(board, piece_square); break;
+                case 3: moves = GetKnightMoves(board, piece_square); break;
+                case 4: moves = GetBishopMoves(board, piece_square); break;
+                case 5: moves = GetQueenMoves(board, piece_square); break;
+                case 6: moves = GetKingMoves(board, piece_square, false); break;
+            }
+            moves = GetDiscardedMoves(board, moves);  
+            if (moves.Count != 0) return false;  
+        }
+
+        return true;
     }
 
     public bool isCheck(Board board, bool flip_turn=false) {
@@ -210,6 +223,8 @@ public class MoveGenerator
         return isSquareAttacked(board, king_location);
     }
 
+
+    // Move Filtering
     private List<Move> GetDiscardedMoves(Board board, List<Move> legal_moves) {
         List<Move> removed_moves = new List<Move>();
 

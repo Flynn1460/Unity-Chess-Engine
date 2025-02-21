@@ -98,6 +98,7 @@ public struct Square
         catch {
             this.piece = 0;
             Debug.Log("ERROR : " + row + ", " + col);
+            Debug.Log("STR : " + sq_name);
         }
         this.piece_type = piece % 7;
 

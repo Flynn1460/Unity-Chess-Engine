@@ -21,6 +21,7 @@ public class GAME : MonoBehaviour
     [Header("TEST SETTINGS")]
     [SerializeField] private bool do_move_scan = false;
     [SerializeField] private bool do_move_test = false;
+    [SerializeField] private bool do_state_test = false;
     [SerializeField] private bool auto_restart_game = false;
     [SerializeField] private bool clear_console = false;
 
@@ -30,8 +31,8 @@ public class GAME : MonoBehaviour
     [SerializeField] private int ENGINE_1 = 0;
     [SerializeField] private int ENGINE_2 = 0;
 
-    [SerializeField] private String ENGINE_1_NAME = "";
-    [SerializeField] private String ENGINE_2_NAME = "";
+    private String ENGINE_1_NAME = "";
+    private String ENGINE_2_NAME = "";
 
     [SerializeField] private int GAME_NUM = 0;
 
@@ -58,6 +59,7 @@ public class GAME : MonoBehaviour
 
     private Thread legal_move_thread;
     private Thread legal_test_thread;
+    private Thread state_test_thread;
 
     void RunLegalMoves() {
         Thread.Sleep(1000);
@@ -109,14 +111,43 @@ public class GAME : MonoBehaviour
         UnityEngine.Debug.Log($"PLY TEST COMPLETE IN {st.ElapsedMilliseconds}ms");
     }
 
+    private void RunStateTest() {
+        Stopwatch st = new Stopwatch();
+        st.Start();
+
+        for (int i=0; i<1000; i++) {
+            board_manager.move_generator.isDraw(board_manager.board);
+        }
+
+        st.Stop();
+
+        String avr_time = (double)st.ElapsedMilliseconds + "μs";
+
+        UnityEngine.Debug.Log("Avr. Draw Time : "+avr_time);
+
+        st = new Stopwatch();
+        st.Start();
+
+        for (int i=0; i<1000; i++) {
+            board_manager.move_generator.isCheckmate(board_manager.board);
+        }
+
+        avr_time = (double)st.ElapsedMilliseconds + "μs";
+
+        UnityEngine.Debug.Log("Avr. Checkmate Time : "+avr_time);
+    }
+
     // Standard Start
     void Awake() {   
         board_manager = new BoardManager();
-        gamematcher = new GameMatcher(engine_move_time);
+        gamematcher = new GameMatcher(board_manager, engine_move_time);
 
         if (DO_SUITE) {
             board_manager.board.white_id = ENGINE_1;
             board_manager.board.black_id = ENGINE_2;
+
+            ENGINE_1_NAME = gamematcher.GetName(ENGINE_1);
+            ENGINE_2_NAME = gamematcher.GetName(ENGINE_2);
         }
         else{
             board_manager.board.white_id = white_id;
@@ -127,6 +158,7 @@ public class GAME : MonoBehaviour
 
         legal_move_thread = new Thread(RunLegalMoves);
         legal_test_thread = new Thread(RunLegalTest);
+        state_test_thread = new Thread(RunStateTest);
     }
 
     // NORMAL GAME
@@ -158,6 +190,7 @@ public class GAME : MonoBehaviour
 
             if (do_move_scan) legal_move_thread.Start();
             if (do_move_test) legal_test_thread.Start();
+            if (do_state_test) state_test_thread.Start();
         }
     }
 
@@ -180,8 +213,7 @@ public class GAME : MonoBehaviour
             timer_controller.flip_turn(turn);
 
             if (board_manager.board.turn_id > 0) {
-                Move EngineMove = gamematcher.GetEngineMove(board_manager);
-                board_manager.board.move(EngineMove);
+                gamematcher.GetEngineMove();
             }
         }
     }
@@ -193,7 +225,7 @@ public class GAME : MonoBehaviour
 
         isGameOver = true;
 
-        if (auto_restart_game) RestartButton_PRESSED();
+        if (auto_restart_game && !DO_SUITE) RestartButton_PRESSED();
     }
 
     // SUITE TESTING
@@ -213,11 +245,13 @@ public class GAME : MonoBehaviour
 
             UnityEngine.Debug.Log($"RESULTS\n\n<color={e1_col}>{ENGINE_1_NAME}: {wins}, {draws},{losses}</color>\n<color={e2_col}>{ENGINE_2_NAME}: {losses}, {draws},{wins}</color>\n\n");
             
+            String full_log_file = "./Assets/Scripts/ENGINE_LOGS/deep_suite_logs.txt";
             String log_file = "./Assets/Scripts/ENGINE_LOGS/suite_logs.txt";
 
             String time = DateTime.Now.ToString("dd-MM-yy HH:mm:ss");
 
-            String content = $"\n\n=============================\n\nSUITE TEST: {time}\n\n{ENGINE_1_NAME}: {wins}W, {draws}D, {losses}L\n{ENGINE_2_NAME}: {losses}W, {draws}D, {wins}L\n\n";
+            String content = $"\n\n=============================\n\nSUITE TEST: {time}\n\n{ENGINE_1_NAME}: {losses}W, {draws}D, {wins}L\n{ENGINE_2_NAME}: {wins}W, {draws}D, {losses}L\n\n";
+            String content_full = $"\n\n=============================\n\nSUITE TEST: {time}\n\n{ENGINE_1_NAME}: {losses}W, {draws}D, {wins}L\n{ENGINE_2_NAME}: {wins}W, {draws}D, {losses}L\n\n";
 
             int game=0;
 
@@ -225,15 +259,16 @@ public class GAME : MonoBehaviour
             foreach(String GAME_MV in GAMES_MOVE_LIST) {
                 game++;
 
-                content += $"\n{game}.  " + String.Join(" ", GAME_MV);
+                content_full += $"\n{game}.  " + String.Join(" ", GAME_MV);
             }
 
             File.AppendAllText(log_file, content);
+            File.AppendAllText(full_log_file, content_full);
             GameOver(0, print_output:false);
         }
         else {
             current_game_num++;
-            UnityEngine.Debug.Log("GAME: "+current_game_num + " ¦  EN1: " + RUNNING_GAMES);
+            UnityEngine.Debug.Log("GAME: "+current_game_num + " ¦  "+ENGINE_1_NAME+": " + RUNNING_GAMES);
 
             // Setup Board
             Awake();
@@ -244,6 +279,15 @@ public class GAME : MonoBehaviour
 
             board_manager.board.set_fen(board_fen);
             suite_turn = !board_manager.board.turn;
+
+            if (current_game_num%2 == 0) {
+                board_manager.board.white_id = ENGINE_1;
+                board_manager.board.black_id = ENGINE_2;
+            }
+            else {
+                board_manager.board.white_id = ENGINE_2;
+                board_manager.board.black_id = ENGINE_1;
+            }
 
             piece_setup.ClearPieces();
             piece_setup.SetupPieces(board_manager.board.b);
@@ -265,8 +309,7 @@ public class GAME : MonoBehaviour
             timer_controller.flip_turn(suite_turn);
 
             if (board_manager.board.turn_id > 0) {
-                Move EngineMove = gamematcher.GetEngineMove(board_manager);
-                board_manager.board.move(EngineMove);
+                gamematcher.GetEngineMove();
             }
         }
     }
@@ -274,9 +317,9 @@ public class GAME : MonoBehaviour
     void GameOver_SUITE(int state) {
         (int losses, int draws, int wins) = RUNNING_GAMES;
 
-        if (state == 1 ) wins++;
-        if (state == 0 ) draws++;
-        if (state == -1) losses++;
+        if ((state ==  1 && current_game_num%2==0) || (state == -1 && current_game_num%2==1)) wins++;
+        if ((state == -1 && current_game_num%2==0) || (state ==  1 && current_game_num%2==1)) losses++;
+        if (state == 0 )draws++;
 
         RUNNING_GAMES = (losses, draws, wins);
 

@@ -1,9 +1,33 @@
-
+using System;
 
 namespace ENGINE_NAMESPACE_Minimax_1 {
+
 public class Eval {
-    public int EvaluateBoard(Board board) {
-        int eval_bias = 0;
+    private Random rn = new Random();
+    private MoveGenerator mg = new MoveGenerator();
+
+    public double EvaluateBoard(Board board) {
+        double eval_bias = 0;
+
+        if (mg.isCheckmate(board) == 1 ) {
+            eval_bias = +998;
+        }
+        else if (mg.isCheckmate(board) == -1) {
+            eval_bias = -998;
+        }
+        else if (mg.isDraw(board)) {
+            eval_bias = 0;
+        }
+        else {
+            eval_bias = PieceSum(board);
+        }
+
+        eval_bias += (rn.NextDouble() * 0.02f) - 0.01f;
+        return eval_bias;
+    }
+
+    public double PieceSum(Board board) {
+        double eval_bias = 0;
 
         for (int row=0; row<8; row++) {
             for (int col=0; col<8; col++) {

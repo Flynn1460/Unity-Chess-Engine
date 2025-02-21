@@ -5826,20 +5826,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ALLOWED_TIME: 6774
-  engine_move_time: 100
-  white_id: 3
-  black_id: 2
+  engine_move_time: 200
+  white_id: 2
+  black_id: 3
   board_fen: start
   do_move_scan: 0
   do_move_test: 0
-  auto_restart_game: 0
+  do_state_test: 0
+  auto_restart_game: 1
   clear_console: 0
   DO_SUITE: 1
-  ENGINE_1: 2
-  ENGINE_2: 3
-  ENGINE_1_NAME: Random
-  ENGINE_2_NAME: Terrible Minimax
-  GAME_NUM: 6
+  ENGINE_1: 3
+  ENGINE_2: 1
+  ENGINE_1_NAME: Minimax V1
+  ENGINE_2_NAME: Random
+  GAME_NUM: 100
 --- !u!114 &867577149
 MonoBehaviour:
   m_ObjectHideFlags: 0

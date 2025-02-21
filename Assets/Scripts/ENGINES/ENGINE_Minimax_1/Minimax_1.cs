@@ -10,7 +10,7 @@ public class ENGINE_Minimax_1 {
 
 
     public String GET_MOVE(Board cpy_board, int movetime) {
-        Move move = minimax.Get_Move(cpy_board, movetime);
+        Move move = minimax.Get_Move2(cpy_board, movetime);
 
         return move.str_uci();
     }
