@@ -69,14 +69,20 @@ public class CONTROLLER_Timer : MonoBehaviour
         BLACK_TIME = new_time;
     }
 
-    public void flip_turn(bool turn) {
+    public void flip_turn(bool turn, TextMeshProUGUI wt, TextMeshProUGUI bt) {
         if (turn) {
             white_timer.color = TURN_COLOUR;
             black_timer.color = NOT_TURN_COLOUR;
+
+            wt.color = TURN_COLOUR;
+            bt.color = NOT_TURN_COLOUR;
         }
         else {
             white_timer.color = NOT_TURN_COLOUR;
             black_timer.color = TURN_COLOUR;
+
+            wt.color = NOT_TURN_COLOUR;
+            bt.color = TURN_COLOUR;
         }
     }
 

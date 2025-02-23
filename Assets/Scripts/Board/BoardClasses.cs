@@ -168,7 +168,6 @@ public class Move
 
     public Move(Board board, string uci_string) {
         if (uci_string != null) {
-
             start_square = new Square( board, $"{uci_string[0]}{uci_string[1]}" );
             end_square = new Square( board, $"{uci_string[2]}{uci_string[3]} )" );
 
@@ -184,6 +183,12 @@ public class Move
 
                 if (uci_string[4] == 'q' && board.turn ) promote = 5;
                 if (uci_string[4] == 'q' && !board.turn) promote = 12;
+            }
+
+            if (start_square.piece_type == 1 && end_square.piece == 0) {
+                if (Math.Abs(start_square.col - end_square.col) == 1) {
+                    isEnpassant = true;
+                }
             }
         }
     }
@@ -264,7 +269,7 @@ public class Board{
     public int black_id = 0;
     public int turn_id = 0;
 
-    public string SetupFen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    public string SetupFen = "NULL";
 
     // Debug / Setup
     public void set_fen(string FEN) {
@@ -340,11 +345,12 @@ public class Board{
         }
     }
 
-    public void PrintBoard(bool print_arbs=true)
+    public void PrintBoard(MoveGenerator mg)
     {
         string output = "";
 
-        output += String.Join(" ", move_list) + "\n";
+        output += "MOVE LIST: "+String.Join(" ", move_list) + "\n";
+        output += "LEGAL MOVES: "+String.Join(" ", mg.GenerateLegalMoves(this)) + "\n\n";
 
         for (int i = 0; i < b.GetLength(0); i++)
         {
@@ -357,16 +363,14 @@ public class Board{
 
         output += "TURN : " + turn;
 
-        if (print_arbs) {
-            output += "\n";
-            output += "WK : " + is_wking_moved + "\n";
-            output += "BK : " + is_bking_moved + "\n";
-            output += "A1 : " + is_a1_rook_moved + "\n";
-            output += "A8 : " + is_a8_rook_moved + "\n";
-            output += "H1 : " + is_h1_rook_moved + "\n";
-            output += "H8 : " + is_h8_rook_moved + "\n";
-            output += "\n";
-        }
+        output += "\n";
+        output += "WK : " + is_wking_moved + "\n";
+        output += "BK : " + is_bking_moved + "\n";
+        output += "A1 : " + is_a1_rook_moved + "\n";
+        output += "A8 : " + is_a8_rook_moved + "\n";
+        output += "H1 : " + is_h1_rook_moved + "\n";
+        output += "H8 : " + is_h8_rook_moved + "\n";
+        output += "\n";
 
         Debug.Log(output);
     }
@@ -393,6 +397,8 @@ public class Board{
 
         board_cpy.wking_pos = wking_pos;
         board_cpy.bking_pos = bking_pos;
+
+        board_cpy.SetupFen = SetupFen;
 
         board_cpy.b = (int[,])b.Clone();
         board_cpy.move_list = new List<Move>(move_list);

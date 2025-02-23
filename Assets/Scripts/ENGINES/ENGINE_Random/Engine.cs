@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace ENGINE_NAMESPACE_Random {
 public class Random_Engine {

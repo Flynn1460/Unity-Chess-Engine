@@ -5,6 +5,7 @@ using System.Threading;
 using System.Collections.Generic;
 using ENGINE_NAMESPACE_Random;
 using ENGINE_NAMESPACE_Minimax_V1;
+using ENGINE_NAMESPACE_Minimax_V2;
 using System.Threading.Tasks;
 
 
@@ -30,6 +31,8 @@ public class ConsoleUCIInterface
                 RedirectStandardOutput = true
             }
         };
+
+        UnityEngine.Debug.Log("...");
 
         engine.OutputDataReceived += (sender, e) =>
         {
@@ -157,45 +160,54 @@ public class GameMatcher
 
     private CustomEngineInterface ENGINE_OBJ_stockfish = new CustomEngineInterface("Stockfish 17", @"C:/Users/flynn/OneDrive/Dokumentumok/Programming/Unity Projects/Chess Programming/Assets/Scripts/ENGINES/ENGINE_Stockfish/stockfish/stockfish.exe");
     private CustomEngineInterface ENGINE_OBJ_Random = new CustomEngineInterface("Random", typeof(ENGINE_Random));
-    private CustomEngineInterface ENGINE_OBJ_Minimax_1 = new CustomEngineInterface("Minimax 1", typeof(ENGINE_Minimax_V1));
+    private CustomEngineInterface ENGINE_OBJ_Minimax_1 = new CustomEngineInterface("Minimax 1.0", typeof(ENGINE_Minimax_V1));
+    private CustomEngineInterface ENGINE_OBJ_Minimax_2 = new CustomEngineInterface("Minimax 2.2", typeof(ENGINE_Minimax_V2));
 
 
     public GameMatcher(BoardManager board_manager, int engine_movetime) {
         engine_refrence.Add(1, ENGINE_OBJ_stockfish);
         engine_refrence.Add(2, ENGINE_OBJ_Random);
         engine_refrence.Add(3, ENGINE_OBJ_Minimax_1);
+        engine_refrence.Add(4, ENGINE_OBJ_Minimax_2);
 
         bm = board_manager;
 
         move_time = engine_movetime;
     }
 
+    public void UpdateNewGame(BoardManager board_manager) {
+        bm = board_manager;
+    }
 
     public async void GetEngineMove() {
         Move engine_move = await GetEngineMoveAsync();
-
-        if (engine_move.str_uci() == "(-1o-1") {
-            UnityEngine.Debug.LogWarning("STOCKFISH ERROR");
-            UnityEngine.Debug.Log(bm.move_generator.isDraw(bm.board));
-            UnityEngine.Debug.Log(bm.move_generator.isCheckmate(bm.board));
-            return;
-        }
 
         bm.board.move( engine_move ); 
     }    
 
     public async Task<Move> GetEngineMoveAsync()
     {
+        List<Move> legal_moves = bm.move_generator.GenerateLegalMoves(bm.board);
         CustomEngineInterface current_engine = engine_refrence[bm.board.turn_id];
 
         string raw_engine_move = await Task.Run(() => current_engine.GetMoveFromEngine(bm.board.copy(), move_time));
+        
+        foreach(Move move in legal_moves) {
+            if (move.str_uci() == raw_engine_move.Replace(" ", "")) {
+                if (raw_engine_move.Length == 4 || raw_engine_move[4] == ' ') raw_engine_move = raw_engine_move.Substring(0, 4);
 
-        if (raw_engine_move.Length == 4 || raw_engine_move[4] == ' ') 
-            raw_engine_move = raw_engine_move.Substring(0, 4);
+                return new Move(bm.board, raw_engine_move);
+            }
+        }
 
+        UnityEngine.Debug.LogWarning("ENGINE "+bm.board.turn_id+" PASSED ILLEGAL MOVE : " + raw_engine_move);
+        bm.board.PrintBoard(bm.move_generator);
         return new Move(bm.board, raw_engine_move);
     }
 
 
-    public String GetName(int engine_code) {  return engine_refrence[engine_code].display_name;  }
+    public String GetName(int engine_code) { 
+        if (engine_code == 0) return "Player"; 
+        return engine_refrence[engine_code].display_name;  
+    }
 }

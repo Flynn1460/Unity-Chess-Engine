@@ -116,6 +116,7 @@ public class MoveGenerator
         return local_count;
     }
 
+
     // End Game Cases
     public int isCheckmate(Board board_) {
         if (!isCheck(board_, true)) return 0;
@@ -176,6 +177,7 @@ public class MoveGenerator
             }
 
             if (reached_times == 3) {
+                // UnityEngine.Debug.Log("rep");
                 return true;
             }
         }
@@ -189,6 +191,7 @@ public class MoveGenerator
             List<int> newSq = GetPieceTypes( new_mv.board_before_move, board.turn, PieceGroup.BOTH);
 
             if (oldSq.SequenceEqual(newSq)) {
+                // UnityEngine.Debug.Log("sq");
                 return true;
             }
         }   
@@ -221,6 +224,10 @@ public class MoveGenerator
         if (flip_turn) board.turn = !board.turn;
         
         return isSquareAttacked(board, king_location);
+    }
+
+    public bool isGM(Board board_) {
+        return isCheckmate(board_) != 0 || isDraw(board_);
     }
 
 
@@ -349,6 +356,7 @@ public class MoveGenerator
 
         return type_squares;
     }
+
 
     // Hard Work Moves
     private List<Move> GetPawnMoves(Board board, Square piece_square, bool include_theory=false) {
