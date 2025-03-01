@@ -7,6 +7,8 @@ namespace ENGINE_NAMESPACE_Minimax_V3 {
 public class MinimaxEngine {
     
     private MoveGenerator move_generator = new MoveGenerator();
+    
+    private Transposition trs = new Transposition();
     private Eval eval_cl = new Eval();
 
     private Stopwatch stopwatch = new Stopwatch();
@@ -17,7 +19,9 @@ public class MinimaxEngine {
         stopwatch = new Stopwatch();
         stopwatch.Start();
 
-        (Move returned_mv, double eval, List<Move> ordered_moves_) = minimax(board, set_depth-1, -999, +999, is_top_depth:true);
+        trs.CLEAR_HASH_TABLE();
+
+        (Move returned_mv, double eval, List<Move> ordered_moves_) = top_minimax(board, set_depth-1, -999, +999);
 
         UnityEngine.Debug.Log($"E3: Max Depth of {set_depth} reached in: {stopwatch.ElapsedMilliseconds}ms");
         return returned_mv;
@@ -25,10 +29,11 @@ public class MinimaxEngine {
 
     public Move Get_TimeMove(Board board, int movetime) {
         List<Move> ordered_moves = null;
-        allocated_movetime = movetime;
 
         stopwatch = new Stopwatch();
         stopwatch.Start();
+        
+        allocated_movetime = movetime;
 
         Move best_move = new Move();
 
@@ -36,11 +41,13 @@ public class MinimaxEngine {
         double prev_eval = 0;
 
 
+
         while (true) {
-            (Move returned_mv, double eval, List<Move> returned_ordered_moves) = minimax(board, (max_depth-1), -999, +999, is_top_depth:true, last_eval_best_moves:ordered_moves);
+            trs.CLEAR_HASH_TABLE();
+            
+            (Move returned_mv, double eval, List<Move> returned_ordered_moves) = top_minimax(board, max_depth-1, -999, +999, last_eval_best_moves:ordered_moves);
 
             if (eval == -1001) {
-                // UnityEngine.Debug.Log($"3.1  :  Depth: {max_depth-1}    {best_move}    {prev_eval}");
                 return best_move;
             }
             else if (eval == 900 || eval == -900) {
@@ -55,20 +62,16 @@ public class MinimaxEngine {
         }
     }
 
-
-
           
-    public (Move, double, List<Move>) minimax(Board board, int depth, double alpha, double beta, bool is_top_depth=false, List<Move> last_eval_best_moves=null) {        
-                
-        
+    public (Move, double, List<Move>) top_minimax(Board board, int depth, double alpha, double beta, List<Move> last_eval_best_moves=null) {        
         List<Move> moves = move_generator.GenerateLegalMoves(board);
+
         if (last_eval_best_moves != null) {
             moves = last_eval_best_moves.Intersect(moves).Concat(moves.Except(last_eval_best_moves)).ToList();
         }
-        else if (depth > 1){
+        else {
             moves = OrderMoves(moves, board.turn); 
         }
-
 
         List<(Move move, double eval)> moveEvals = new List<(Move, double)>();
 
@@ -77,20 +80,20 @@ public class MinimaxEngine {
 
         Move highest_mv = new Move();
 
-
         foreach(Move move in moves) {
             board.move(move);
 
-            if (move_generator.isGM(board) || depth == 0) {
+            if (depth == 0) {
+                eval = eval_cl.EvaluateBoard(board);
+            }
+            else if (move_generator.isGM(board)) {
                 eval = eval_cl.EvaluateBoard(board);
             }
             else {
-                (Move x, double y, List<Move> z) = minimax(board, depth-1, alpha, beta);
-                eval = y;
+                eval = minimax(board, depth-1, alpha, beta);
             }
 
             board.undo_move();
-
 
 
             if ((eval > highest_eval && board.turn) || (eval < highest_eval && !board.turn)) {
@@ -103,30 +106,74 @@ public class MinimaxEngine {
                 if (beta <= alpha) break;
             }
 
-            if (is_top_depth) moveEvals.Add((move, eval));
-            
+            moveEvals.Add((move, eval));
+
             if (stopwatch.ElapsedMilliseconds > allocated_movetime) {
                 return (null, -1001, null);
             }
         }
 
-        if (is_top_depth){
-            if (board.turn) moveEvals.Sort((a, b) => b.eval.CompareTo(a.eval));
-            if (!board.turn) moveEvals.Sort((a, b) => a.eval.CompareTo(b.eval));
-            return (highest_mv, highest_eval, moveEvals.Select(x => x.move).ToList());
-        }  
+        if (board.turn) moveEvals.Sort((a, b) => b.eval.CompareTo(a.eval));
+        if (!board.turn) moveEvals.Sort((a, b) => a.eval.CompareTo(b.eval));
+
+        return (highest_mv, highest_eval, moveEvals.Select(x => x.move).ToList());
+    }
+
+    public double minimax(Board board, int depth, double alpha, double beta) {        
+        double searched_eval = trs.FIND_HASH(board.copy());
+
+        if (searched_eval != -1002) return searched_eval;
+
+        List<Move> moves = move_generator.GenerateLegalMoves(board);
+        if (depth > 1){  moves = OrderMoves(moves, board.turn); }
 
 
-        return (highest_mv, highest_eval, null);
+        double highest_eval = board.turn ? -1000 : +1000;
+        double eval;
+
+        foreach(Move move in moves) {
+            board.move(move);
+
+            if (depth == 0) {
+                eval = eval_cl.EvaluateBoard(board);
+            }
+            else if (move_generator.isGM(board)) {
+                eval = eval_cl.EvaluateBoard(board);
+            }
+            else {
+                double y = minimax(board, depth-1, alpha, beta);
+                eval = y;
+            }
+
+            board.undo_move();
+
+
+            if ((eval > highest_eval && board.turn) || (eval < highest_eval && !board.turn)) {
+                highest_eval = eval;
+
+                if (board.turn)  {  alpha = Math.Max(alpha, eval);  }
+                else  {  beta = Math.Min(beta, eval);  }
+                
+                if (beta <= alpha) break;
+            }
+        }
+
+        if (stopwatch.ElapsedMilliseconds > allocated_movetime) {
+            return -1001;
+        }
+        
+        trs.MAKE_HASH(board, highest_eval);
+
+        return highest_eval;
     }
 
 
     
     public List<Move> OrderMoves(List<Move> moves, bool turn) {
-        List<(Move mv, int diff)> ordered_moves = new List<(Move mv, int diff)>();
+        List<(Move mv, float diff)> ordered_moves = new List<(Move mv, float diff)>();
 
         foreach(Move move in moves) {
-            ordered_moves.Add((move, move.end_square.piece_type));
+            ordered_moves.Add((move, move.end_square.piece_type-(move.start_square.piece_type/3)));
         }
 
         if  (turn)  ordered_moves = ordered_moves.OrderBy(x => x.diff).ToList();

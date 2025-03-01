@@ -30,20 +30,23 @@ public class Eval {
     public double EvaluateBoard(Board board) {
         double eval_bias;
 
-        if (!mg.isGM(board)) {
+        bool draw_state = mg.isDraw(board);
+        int checkmate_state = mg.isCheckmate(board);
+
+        if (checkmate_state == 0 && !draw_state) {
             eval_bias = PieceSum(board);
         }
-        else if (mg.isCheckmate(board) == 1 ) {
+        else if (checkmate_state == 1 ) {
             eval_bias = +900;
         }
-        else if (mg.isCheckmate(board) == -1) {
+        else if (checkmate_state == -1) {
             eval_bias = -900;
         }
         else {
             eval_bias = 0;
         }
 
-        eval_bias += (rn.NextDouble() * 0.02f) - 0.02f;
+        // eval_bias += (rn.NextDouble() * 0.02f) - 0.02f;
         return Math.Round(eval_bias, 2);
     }
 
