@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using ENGINE_NAMESPACE_Random;
 using ENGINE_NAMESPACE_Minimax_V1;
 using ENGINE_NAMESPACE_Minimax_V2;
+using ENGINE_NAMESPACE_Minimax_V3;
 using System.Threading.Tasks;
 
 
@@ -31,8 +32,6 @@ public class ConsoleUCIInterface
                 RedirectStandardOutput = true
             }
         };
-
-        UnityEngine.Debug.Log("...");
 
         engine.OutputDataReceived += (sender, e) =>
         {
@@ -162,6 +161,7 @@ public class GameMatcher
     private CustomEngineInterface ENGINE_OBJ_Random = new CustomEngineInterface("Random", typeof(ENGINE_Random));
     private CustomEngineInterface ENGINE_OBJ_Minimax_1 = new CustomEngineInterface("Minimax 1.0", typeof(ENGINE_Minimax_V1));
     private CustomEngineInterface ENGINE_OBJ_Minimax_2 = new CustomEngineInterface("Minimax 2.2", typeof(ENGINE_Minimax_V2));
+    private CustomEngineInterface ENGINE_OBJ_Minimax_3 = new CustomEngineInterface("Minimax 3.2b", typeof(ENGINE_Minimax_V3));
 
 
     public GameMatcher(BoardManager board_manager, int engine_movetime) {
@@ -169,6 +169,7 @@ public class GameMatcher
         engine_refrence.Add(2, ENGINE_OBJ_Random);
         engine_refrence.Add(3, ENGINE_OBJ_Minimax_1);
         engine_refrence.Add(4, ENGINE_OBJ_Minimax_2);
+        engine_refrence.Add(5, ENGINE_OBJ_Minimax_3);
 
         bm = board_manager;
 

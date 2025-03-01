@@ -11,7 +11,20 @@ Minimax 2.1: 100W, 0D, 0L
 Random: 0W, 0D, 100L
 
 Minimax 2.1: 45W, 13D, 42L
-Minimax 1: 42W, 13D, 45L
+Minimax 1.0: 42W, 13D, 45L
 
 Minimax 2.1: 35W, 30D, 35L
 Minimax 2.1: 35W, 30D, 35L
+
+Minimax 2.2: 77W, 7D, 16L
+Minimax 1.0: 16W, 7D, 77L
+
+=======================================================================================
+SUITE TEST: 28-02-25 23:36:37
+
+
+Minimax 3.1: 43W, 17D, 40L
+Minimax 2.2: 40W, 17D, 43L
+
+Minimax 3.1: 80W, 8D, 12L
+Minimax 1.0: 12W, 8D, 80L

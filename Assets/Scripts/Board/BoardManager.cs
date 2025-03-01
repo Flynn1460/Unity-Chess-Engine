@@ -6,8 +6,9 @@ public class BoardManager
     public Board board = new Board();
     public MoveGenerator move_generator = new MoveGenerator();
 
-    private CONTROLLER_SquareHighlight boardHighlighter = new CONTROLLER_SquareHighlight();
+    public SquareHighlight boardHighlighter = new SquareHighlight();
 
+    public BoardManager() {      boardHighlighter.Reset_Tiles(remove_prev_mv:true);      }
 
     public void Highlight_Piece_Moves(Square piece_square) {
         if (board.turn_id == 0) {
@@ -18,8 +19,8 @@ public class BoardManager
     }
 
     public void Push(Move piece_move){
-        boardHighlighter.Reset_Tiles();
+        boardHighlighter.Reset_Tiles(remove_prev_mv:true);
+        boardHighlighter.Highlight_Previous_Move(piece_move);
         board.move(piece_move);
     } 
 }
- 

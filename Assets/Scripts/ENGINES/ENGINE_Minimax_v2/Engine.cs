@@ -19,18 +19,21 @@ public class MinimaxEngine {
 
         if (set_depth != -1) {
             allocated_movetime = 1000000;
-            (Move returned_mv, double eval) = minimax(board, (set_depth-1), -999, +999);
+            (Move returned_mv4, double eval) = minimax(board, set_depth-1, -999, +999);
+            
             UnityEngine.Debug.Log($"E2: Max Depth of {set_depth} reached in: {stopwatch.ElapsedMilliseconds}ms");
-            return returned_mv;
+            return returned_mv4;
         }
 
         Move best_move = new Move(board, "a1h4");
         int max_depth = 1;
+        double prev_eval = 0;
 
         while (true) {
             (Move returned_mv, double eval) = minimax(board, (max_depth-1), -999, +999);
 
             if (eval == -1001) {
+                // UnityEngine.Debug.Log($"2.2  :  Depth: {max_depth-1}    {best_move}    {prev_eval}");
                 return best_move;
             }
             else if (eval == 900 || eval == -900) {
@@ -38,6 +41,7 @@ public class MinimaxEngine {
             }
 
             best_move = returned_mv.copy();
+            prev_eval = eval;
             max_depth++;
         }
     }
