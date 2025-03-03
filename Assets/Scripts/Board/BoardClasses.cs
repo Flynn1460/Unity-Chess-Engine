@@ -40,8 +40,8 @@ public struct Square
     public readonly (int, int) sq;
 
     public readonly bool isWhite;
-    public readonly int piece;
-    public readonly int piece_type;
+    public int piece;
+    public int piece_type;
 
     public readonly int start_row;
 
@@ -139,6 +139,8 @@ public class Move
     public int[,] board_before_move;
     public (int, int) wking_pos;
     public (int, int) bking_pos;
+
+    public uint MOVE_BIT_REP = 0b__000000_0000;
 
     // First two for generic move, next two for castling or en passant
     public int[] board_mv_changes = new int[4];
@@ -345,7 +347,7 @@ public class Board{
         }
     }
 
-    public void PrintBoard(MoveGenerator mg)
+    public void PrintBoard(NewMoveGenerator mg)
     {
         string output = "";
 
@@ -415,8 +417,8 @@ public class Board{
         if (piece == 6) {
             (int rx, int cx) = wking_pos;
             return new Square(b, cx, rx);
-
         }
+        
         else {
             for (int r=0; r<8;r++) {
                 for (int c=0; c<8; c++) {
@@ -564,6 +566,189 @@ public class Board{
         return;
     }
 
+
+
+    public void advanced_move(Move mv) {
+        move_list.Add(mv);
+
+        turn = !turn;
+        turn_id = turn ? white_id : black_id;
+
+
+        if (!(mv.start_square.row <= 7 && mv.start_square.row >= 0 && mv.start_square.col <= 7 && mv.start_square.col >= 0 && mv.end_square.row   <= 7 
+            && mv.end_square.row   >= 0 && mv.end_square.col   <= 7 && mv.end_square.col   >= 0)) return;
+        
+        mv.wking_pos = wking_pos;
+        mv.bking_pos = bking_pos;
+
+        if (mv.promote == -1) {
+            b[mv.end_square.row, mv.end_square.col] = b[mv.start_square.row, mv.start_square.col];
+            b[mv.start_square.row, mv.start_square.col] = 0;
+
+            if (mv.isEnpassant) {
+                int forward_pawn_dir = turn ? 1 : -1;
+
+                mv.start_square.piece = b[mv.end_square.row + forward_pawn_dir, mv.end_square.col];
+                b[mv.end_square.row + forward_pawn_dir, mv.end_square.col] = 0;
+            }
+
+            if (mv.start_square.piece_type != 2 && mv.start_square.piece_type != 6) return;
+
+            wking_pos = (mv.start_square.piece == 6) ? (mv.end_square.row, mv.end_square.col) : wking_pos;
+            bking_pos = (mv.start_square.piece == 13) ? (mv.end_square.row, mv.end_square.col) : bking_pos;
+
+        }
+        else {
+            b[mv.end_square.row, mv.end_square.col] = mv.promote;
+            b[mv.start_square.row, mv.start_square.col] = 0;
+
+            return;
+        }
+        
+        // ROOKS
+        if (mv.start_square.piece_type == 2) {
+            if (!is_a1_rook_moved && mv.start_square.sq == (0, 0)) {  
+                is_a1_rook_moved = true; 
+                mv.MOVE_BIT_REP |= 0b__100000_0000;
+            }
+
+            else if (!is_h1_rook_moved && mv.start_square.sq == (7, 0)) {  
+                is_h1_rook_moved = true; 
+                mv.MOVE_BIT_REP |= 0b__010000_0000;
+            }
+            
+            else if (!is_a8_rook_moved && mv.start_square.sq == (0, 7)) {  
+                is_a8_rook_moved = true; 
+                mv.MOVE_BIT_REP |= 0b__001000_0000;
+            
+            }
+
+            else if (!is_h8_rook_moved && mv.start_square.sq == (7, 7)) {  
+                is_h8_rook_moved = true; 
+                mv.MOVE_BIT_REP |= 0b__000100_0000;
+            }
+            
+            return;
+        }
+
+
+        // KINGS
+        if (!is_wking_moved && mv.start_square.sq == (4, 0)) {   is_wking_moved = true; mv.MOVE_BIT_REP |= 0b__000010_0000;  }
+        else if (!is_bking_moved && mv.start_square.sq == (4, 7)) {   is_bking_moved = true; mv.MOVE_BIT_REP |= 0b__000001_0000;  }
+
+        String king_move = mv.str_uci();
+
+        if (king_move == "e1c1") { // e1c1
+            // ROOK a1d1
+            b[0, 3] = b[0, 0];
+            b[0, 0] = 0;
+
+            mv.MOVE_BIT_REP |= 0b__000000_1000;
+
+            wking_pos = (0, 2);
+        }
+
+        else if (king_move == "e1g1") { // e1g1
+            // ROOK h1f1
+            b[0, 5] = b[0, 7];
+            b[0, 7] = 0;
+
+            mv.MOVE_BIT_REP |= 0b__000000_0100;
+
+            wking_pos = (0, 6);
+        }
+
+
+        else if (king_move == "e8c8") { // e8c8
+            // ROOK a8d8
+            b[7, 3] = b[7, 0];
+            b[7, 0] = 0;
+
+            mv.MOVE_BIT_REP |= 0b__000000_0010;
+
+            bking_pos = (7, 2);
+        }
+
+        else if (king_move == "e8g8") { //e8g8
+            // ROOK h8f8
+            b[7, 5] = b[7, 7];
+            b[7, 7] = 0;  
+
+            mv.MOVE_BIT_REP |= 0b__000000_0001;
+
+            bking_pos = (7, 6);
+        }
+    }
+
+    public void advanced_undo_move() {
+        Move prev_mv = move_list[move_list.Count-1];
+        
+        move_list.RemoveAt(move_list.Count-1);
+        
+        turn = !turn;
+        turn_id = turn ? white_id : black_id;
+
+        if (!(prev_mv.start_square.row <= 7 && prev_mv.start_square.row >= 0 && prev_mv.start_square.col <= 7 && prev_mv.start_square.col >= 0 
+            && prev_mv.end_square.row   <= 7 && prev_mv.end_square.row   >= 0 && prev_mv.end_square.col   <= 7 && prev_mv.end_square.col   >= 0)) return;
+
+        b[prev_mv.start_square.row, prev_mv.start_square.col] = b[prev_mv.end_square.row, prev_mv.end_square.col];
+        b[prev_mv.end_square.row, prev_mv.end_square.col] = prev_mv.end_square.piece;
+
+        if (prev_mv.promote != -1) {
+            b[prev_mv.start_square.row, prev_mv.start_square.col] = prev_mv.start_square.piece;
+        }
+
+        if (prev_mv.isEnpassant) {
+            int forward_pawn_dir = turn ? -1 : 1;
+
+            b[prev_mv.end_square.row + forward_pawn_dir, prev_mv.end_square.col] = prev_mv.start_square.piece;
+        }
+
+        if (prev_mv.start_square.piece_type != 6 && prev_mv.start_square.piece_type != 2) return;
+           
+        if (prev_mv.MOVE_BIT_REP != 0) {
+                if ((prev_mv.MOVE_BIT_REP & (1 << 9)) != 0) {  is_a1_rook_moved = false; }
+            else if ((prev_mv.MOVE_BIT_REP & (1 << 8)) != 0) {  is_h1_rook_moved = false; }
+            else if ((prev_mv.MOVE_BIT_REP & (1 << 7)) != 0) {  is_a8_rook_moved = false; }
+            else if ((prev_mv.MOVE_BIT_REP & (1 << 6)) != 0) {  is_h8_rook_moved = false; }
+            else if ((prev_mv.MOVE_BIT_REP & (1 << 5)) != 0) {  is_wking_moved = false; }
+            else if ((prev_mv.MOVE_BIT_REP & (1 << 4)) != 0) {  is_bking_moved = false; } 
+        }
+
+        if (prev_mv.start_square.piece_type != 6) return;
+
+        wking_pos = prev_mv.wking_pos;
+        bking_pos = prev_mv.bking_pos;
+
+        if ((prev_mv.MOVE_BIT_REP & 0b1000) != 0) {
+            // ROOK a1d1
+            b[0, 0] = b[0, 3];
+            b[0, 3] = 0;
+        }
+
+        else if ((prev_mv.MOVE_BIT_REP & 0b0100) != 0) {
+            // ROOK h1f1
+            b[0, 7] = b[0, 5];
+            b[0, 5] = 0;
+        }
+
+
+        else if ((prev_mv.MOVE_BIT_REP & 0b0010) != 0) {
+            // ROOK a8d8
+            b[7, 0] = b[7, 3];
+            b[7, 3] = 0;
+        }
+        
+        else if ((prev_mv.MOVE_BIT_REP & 0b0001) != 0) {
+            // ROOK h8f8
+            b[7, 7] = b[7, 5];
+            b[7, 5] = 0;  
+        }
+
+    }
+
+
+
     private void mv_flip_turn(Move mv, bool flip_turn) {
         if (!flip_turn) return;
 
@@ -571,7 +756,7 @@ public class Board{
         turn = !turn;
 
         if (turn)  turn_id = white_id;
-        if (!turn) turn_id = black_id;
+        else turn_id = black_id;
     }
 
     public bool isEqualToBoard(int[,] other_board)

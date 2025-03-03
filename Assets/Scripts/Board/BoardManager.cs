@@ -4,7 +4,7 @@ public class BoardManager
 {
     // Classes
     public Board board = new Board();
-    public MoveGenerator move_generator = new MoveGenerator();
+    public NewMoveGenerator move_generator = new NewMoveGenerator();
 
     public SquareHighlight boardHighlighter = new SquareHighlight();
 
@@ -21,6 +21,6 @@ public class BoardManager
     public void Push(Move piece_move){
         boardHighlighter.Reset_Tiles(remove_prev_mv:true);
         boardHighlighter.Highlight_Previous_Move(piece_move);
-        board.move(piece_move);
+        board.advanced_move(piece_move);
     } 
 }

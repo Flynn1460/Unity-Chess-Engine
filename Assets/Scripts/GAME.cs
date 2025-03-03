@@ -14,8 +14,8 @@ public class GAME : MonoBehaviour
     [SerializeField] private int ALLOWED_TIME = 180;
     [SerializeField] private int engine_move_time = 10000;
 
-    [Range(0,5)][SerializeField] private int white_id;
-    [Range(0,5)][SerializeField] private int black_id;
+    [Range(0,6)][SerializeField] private int white_id;
+    [Range(0,6)][SerializeField] private int black_id;
     
     [SerializeField] private string board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -69,8 +69,6 @@ public class GAME : MonoBehaviour
     private Thread state_test_thread;
 
     void RunLegalMoves() {
-        Thread.Sleep(1000);
-
         int x = 0;
 
         Board board = board_manager.board.copy();
@@ -79,7 +77,7 @@ public class GAME : MonoBehaviour
             x += 1;
             List<double> move_data = board_manager.move_generator.GenerateLegalPly(board, x, move_breakdown:false);
             String mvs = move_data[0].ToString("N0");
-            String nps = ((move_data[0] / move_data[1])*1000).ToString("N0");
+            String nps = (move_data[0] / move_data[1]*1000).ToString("N0");
 
             UnityEngine.Debug.Log(mvs + " ¦ " + x + " ply   " + move_data[1] + "ms  ¦ " + nps + " n/s");
         }
@@ -109,7 +107,7 @@ public class GAME : MonoBehaviour
 
                 String mvs_e = fen_test.expected_output[i-1].ToString("N0");
                 String mvs_o = move_data[0].ToString("N0");
-                String nps = ((move_data[0] / move_data[1])*1000).ToString("N0");
+                String nps = (move_data[0] / move_data[1]*1000).ToString("N0");
                 String colour = (fen_test.expected_output[i-1] == move_data[0]) ? "<color=#59de81>" : "<color=#e35454>";
 
                 UnityEngine.Debug.Log($"{colour}{fen_test.TestName}: {i}ply   [{mvs_e}:{mvs_o}]  {move_data[1]}ms  {nps} n/s  </color>");

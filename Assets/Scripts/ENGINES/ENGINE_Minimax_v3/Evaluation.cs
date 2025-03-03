@@ -46,7 +46,7 @@ public class Eval {
             eval_bias = 0;
         }
 
-        // eval_bias += (rn.NextDouble() * 0.02f) - 0.02f;
+        eval_bias += (rn.NextDouble() * 0.02f) - 0.02f;
         return Math.Round(eval_bias, 2);
     }
 

@@ -5964,18 +5964,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ALLOWED_TIME: 3600
-  engine_move_time: 1100
+  engine_move_time: 2500
   white_id: 0
-  black_id: 5
+  black_id: 0
   board_fen: start
-  do_move_scan: 0
+  do_move_scan: 1
   do_move_test: 0
   do_state_test: 0
   auto_restart_game: 1
   clear_console: 0
   DO_SUITE: 0
-  ENGINE_1: 05000000
-  ENGINE_2: 0400000003000000
+  ENGINE_1: 06000000
+  ENGINE_2: 0500000004000000
   GAME_NUM: 100
 --- !u!114 &867577149
 MonoBehaviour:
