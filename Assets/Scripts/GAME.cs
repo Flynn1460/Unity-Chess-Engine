@@ -75,7 +75,7 @@ public class GAME : MonoBehaviour
 
         while (true) {
             x += 1;
-            List<double> move_data = board_manager.move_generator.GenerateLegalPly(board, x, move_breakdown:false);
+            List<double> move_data = board_manager.move_generator.GenerateLegalPly(board, x);
             String mvs = move_data[0].ToString("N0");
             String nps = (move_data[0] / move_data[1]*1000).ToString("N0");
 
@@ -103,7 +103,7 @@ public class GAME : MonoBehaviour
             board.set_fen(fen_test.FEN);
 
             for (int i=1; i<=fen_test.expected_output.Count; i++) {
-                List<double> move_data = board_manager.move_generator.GenerateLegalPly(board, i, move_breakdown:false);
+                List<double> move_data = board_manager.move_generator.GenerateLegalPly(board, i);
 
                 String mvs_e = fen_test.expected_output[i-1].ToString("N0");
                 String mvs_o = move_data[0].ToString("N0");
@@ -178,6 +178,7 @@ public class GAME : MonoBehaviour
 
     void RepeatableAwake() {
         board_manager = new BoardManager();
+        timer_controller.ResetBM(board_manager);
         gamematcher.UpdateNewGame(board_manager);
 
         if (engine_move_time < 50) {
@@ -211,6 +212,14 @@ public class GAME : MonoBehaviour
 
     // NORMAL GAME
 
+    void CHECK_STACK_MV() {
+        if (board_manager.STACKED_MOVE.str_uci() == "a1h5") return;
+
+        board_manager.Push(board_manager.STACKED_MOVE);
+
+        board_manager.STACKED_MOVE = new Move(board_manager.board, "a1h5");
+    }
+
     void Start() { 
         // Setup controllers
         timer_controller = FindFirstObjectByType<CONTROLLER_Timer>(); 
@@ -224,12 +233,14 @@ public class GAME : MonoBehaviour
         if (DO_SUITE) bg.color = test_colour;
         else          bg.color = norm_colour;
 
-        timer_controller.change_timer(ALLOWED_TIME);
 
         if (DO_SUITE) {
             SUITE_START();
         }
         else {
+
+            timer_controller.change_timer(ALLOWED_TIME);
+            
             // Setup Board
             if (board_fen == "start") board_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -246,10 +257,14 @@ public class GAME : MonoBehaviour
             if (do_move_test) legal_test_thread.Start();
             if (do_state_test) state_test_thread.Start();
         }
+
+        Thread.Sleep(500);
     }
 
     void Update() {
         if (isGameOver) return;
+
+        CHECK_STACK_MV();
 
         if (DO_SUITE) SUITE_UPDATE();
 
@@ -354,7 +369,7 @@ public class GAME : MonoBehaviour
             if (board_manager.board.is_checkmate != 0 || timer_controller.IS_TIMEOUT) {  GameOver_SUITE(board_manager.board.is_checkmate); return;  }
             if (board_manager.board.is_draw) {  GameOver_SUITE(0); return;  }
 
-            suite_turn = board_manager.board.turn;
+            suite_turn = !suite_turn;
             timer_controller.flip_turn(suite_turn, white_text, black_text);
 
             if (board_manager.board.turn_id > 0) {

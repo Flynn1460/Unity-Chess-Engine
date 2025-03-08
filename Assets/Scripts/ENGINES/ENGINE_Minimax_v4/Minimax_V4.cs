@@ -9,7 +9,9 @@ public class ENGINE_Minimax_V4 {
     private MinimaxEngine minimax = new MinimaxEngine();
 
     public String GET_MOVE(Board cpy_board, int movetime) {
-        Move move = minimax.Get_SetMove(cpy_board, 4);
+        Move move = minimax.Get_TimeMove(cpy_board, movetime);
+
+        // 15895ms
 
         return move.str_uci();
     }

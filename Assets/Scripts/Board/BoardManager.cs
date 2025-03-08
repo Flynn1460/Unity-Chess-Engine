@@ -8,11 +8,17 @@ public class BoardManager
 
     public SquareHighlight boardHighlighter = new SquareHighlight();
 
-    public BoardManager() {      boardHighlighter.Reset_Tiles(remove_prev_mv:true);      }
+    public Move STACKED_MOVE;
+
+    public BoardManager() {      
+        boardHighlighter.Reset_Tiles(remove_prev_mv:true);      
+
+        STACKED_MOVE = new Move(board, "a1h5"); // A1H5 is STACK MV DEFAULT
+    }
 
     public void Highlight_Piece_Moves(Square piece_square) {
         if (board.turn_id == 0) {
-            List<Move> piece_legal_moves = move_generator.GenerateLegalMoves(board, piece_square);
+            List<Move> piece_legal_moves = move_generator.GenerateLegalMovesForSquare(board, piece_square);
 
             boardHighlighter.Highlight_Tiles(piece_legal_moves);
         }

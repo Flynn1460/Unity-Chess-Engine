@@ -5964,7 +5964,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ALLOWED_TIME: 3600
-  engine_move_time: 2500
+  engine_move_time: 200
   white_id: 0
   black_id: 0
   board_fen: start
@@ -5975,8 +5975,8 @@ MonoBehaviour:
   clear_console: 0
   DO_SUITE: 0
   ENGINE_1: 06000000
-  ENGINE_2: 0500000004000000
-  GAME_NUM: 100
+  ENGINE_2: 0300000004000000
+  GAME_NUM: 5
 --- !u!114 &867577149
 MonoBehaviour:
   m_ObjectHideFlags: 0

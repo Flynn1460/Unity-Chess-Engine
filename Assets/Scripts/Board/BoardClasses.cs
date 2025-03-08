@@ -137,10 +137,11 @@ public class Move
     public int promote = -1; // If number is set to a valid piece type then it is a promoting piece
     
     public int[,] board_before_move;
+    public HASH board_before_HASH;
     public (int, int) wking_pos;
     public (int, int) bking_pos;
 
-    public uint MOVE_BIT_REP = 0b__000000_0000;
+    public uint MOVE_BIT_REP = 0b_000000;
 
     // First two for generic move, next two for castling or en passant
     public int[] board_mv_changes = new int[4];
@@ -248,6 +249,8 @@ public class Board{
         { 0, 0, 0, 0, 0, 0, 0, 0 }
     };
 
+    public HashGen hashGen = new HashGen();
+
     public List<Move> move_list = new List<Move>();
     public bool turn = true;
     
@@ -271,11 +274,14 @@ public class Board{
     public int black_id = 0;
     public int turn_id = 0;
 
+    public bool custom_fen = false;
     public string SetupFen = "NULL";
 
     // Debug / Setup
     public void set_fen(string FEN) {
         SetupFen = FEN;
+
+        if (SetupFen != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {custom_fen = true;}
 
         int f = 0; //Files
         int r = 7; //Ranks
@@ -352,7 +358,8 @@ public class Board{
         string output = "";
 
         output += "MOVE LIST: "+String.Join(" ", move_list) + "\n";
-        output += "LEGAL MOVES: "+String.Join(" ", mg.GenerateLegalMoves(this)) + "\n\n";
+
+        if (mg != null) output += "LEGAL MOVES: "+String.Join(" ", mg.GenerateLegalMoves(this)) + "\n\n";
 
         for (int i = 0; i < b.GetLength(0); i++)
         {
@@ -400,6 +407,7 @@ public class Board{
         board_cpy.wking_pos = wking_pos;
         board_cpy.bking_pos = bking_pos;
 
+        board_cpy.custom_fen = custom_fen;
         board_cpy.SetupFen = SetupFen;
 
         board_cpy.b = (int[,])b.Clone();
@@ -439,6 +447,8 @@ public class Board{
             mv.end_square.row   <= 7 && mv.end_square.row   >= 0 && mv.end_square.col   <= 7 && mv.end_square.col   >= 0) {
         
         mv.board_before_move = (int[,])b.Clone();
+        mv.board_before_HASH = hashGen.MAKE_HASH(this);
+
         mv.wking_pos = wking_pos;
         mv.bking_pos = bking_pos;
 
@@ -573,10 +583,8 @@ public class Board{
 
         turn = !turn;
         turn_id = turn ? white_id : black_id;
-
-
-        if (!(mv.start_square.row <= 7 && mv.start_square.row >= 0 && mv.start_square.col <= 7 && mv.start_square.col >= 0 && mv.end_square.row   <= 7 
-            && mv.end_square.row   >= 0 && mv.end_square.col   <= 7 && mv.end_square.col   >= 0)) return;
+        
+        mv.board_before_HASH = hashGen.MAKE_HASH(this);
         
         mv.wking_pos = wking_pos;
         mv.bking_pos = bking_pos;
@@ -609,72 +617,54 @@ public class Board{
         if (mv.start_square.piece_type == 2) {
             if (!is_a1_rook_moved && mv.start_square.sq == (0, 0)) {  
                 is_a1_rook_moved = true; 
-                mv.MOVE_BIT_REP |= 0b__100000_0000;
+                mv.MOVE_BIT_REP |= 0b_100000;
             }
 
             else if (!is_h1_rook_moved && mv.start_square.sq == (7, 0)) {  
                 is_h1_rook_moved = true; 
-                mv.MOVE_BIT_REP |= 0b__010000_0000;
+                mv.MOVE_BIT_REP |= 0b_010000;
             }
             
             else if (!is_a8_rook_moved && mv.start_square.sq == (0, 7)) {  
                 is_a8_rook_moved = true; 
-                mv.MOVE_BIT_REP |= 0b__001000_0000;
+                mv.MOVE_BIT_REP |= 0b_001000;
             
             }
 
             else if (!is_h8_rook_moved && mv.start_square.sq == (7, 7)) {  
                 is_h8_rook_moved = true; 
-                mv.MOVE_BIT_REP |= 0b__000100_0000;
+                mv.MOVE_BIT_REP |= 0b_000100;
             }
             
             return;
         }
 
-
         // KINGS
-        if (!is_wking_moved && mv.start_square.sq == (4, 0)) {   is_wking_moved = true; mv.MOVE_BIT_REP |= 0b__000010_0000;  }
-        else if (!is_bking_moved && mv.start_square.sq == (4, 7)) {   is_bking_moved = true; mv.MOVE_BIT_REP |= 0b__000001_0000;  }
+        if (!is_wking_moved && mv.start_square.sq == (4, 0)) {   is_wking_moved = true; mv.MOVE_BIT_REP |= 0b_000010;  }
+        else if (!is_bking_moved && mv.start_square.sq == (4, 7)) {   is_bking_moved = true; mv.MOVE_BIT_REP |= 0b_000001;  }
 
-        String king_move = mv.str_uci();
-
-        if (king_move == "e1c1") { // e1c1
-            // ROOK a1d1
+        
+        if (mv.is_castle_white_long) {  // e1c1
             b[0, 3] = b[0, 0];
             b[0, 0] = 0;
 
-            mv.MOVE_BIT_REP |= 0b__000000_1000;
-
             wking_pos = (0, 2);
         }
-
-        else if (king_move == "e1g1") { // e1g1
-            // ROOK h1f1
+        else if (mv.is_castle_white_short) { // e1g1
             b[0, 5] = b[0, 7];
             b[0, 7] = 0;
 
-            mv.MOVE_BIT_REP |= 0b__000000_0100;
-
             wking_pos = (0, 6);
         }
-
-
-        else if (king_move == "e8c8") { // e8c8
-            // ROOK a8d8
+        else if (mv.is_castle_black_long) { // e8c8
             b[7, 3] = b[7, 0];
             b[7, 0] = 0;
 
-            mv.MOVE_BIT_REP |= 0b__000000_0010;
-
             bking_pos = (7, 2);
         }
-
-        else if (king_move == "e8g8") { //e8g8
-            // ROOK h8f8
+        else if (mv.is_castle_black_short) { // e8g8
             b[7, 5] = b[7, 7];
-            b[7, 7] = 0;  
-
-            mv.MOVE_BIT_REP |= 0b__000000_0001;
+            b[7, 7] = 0;
 
             bking_pos = (7, 6);
         }
@@ -687,9 +677,6 @@ public class Board{
         
         turn = !turn;
         turn_id = turn ? white_id : black_id;
-
-        if (!(prev_mv.start_square.row <= 7 && prev_mv.start_square.row >= 0 && prev_mv.start_square.col <= 7 && prev_mv.start_square.col >= 0 
-            && prev_mv.end_square.row   <= 7 && prev_mv.end_square.row   >= 0 && prev_mv.end_square.col   <= 7 && prev_mv.end_square.col   >= 0)) return;
 
         b[prev_mv.start_square.row, prev_mv.start_square.col] = b[prev_mv.end_square.row, prev_mv.end_square.col];
         b[prev_mv.end_square.row, prev_mv.end_square.col] = prev_mv.end_square.piece;
@@ -707,12 +694,12 @@ public class Board{
         if (prev_mv.start_square.piece_type != 6 && prev_mv.start_square.piece_type != 2) return;
            
         if (prev_mv.MOVE_BIT_REP != 0) {
-                if ((prev_mv.MOVE_BIT_REP & (1 << 9)) != 0) {  is_a1_rook_moved = false; }
-            else if ((prev_mv.MOVE_BIT_REP & (1 << 8)) != 0) {  is_h1_rook_moved = false; }
-            else if ((prev_mv.MOVE_BIT_REP & (1 << 7)) != 0) {  is_a8_rook_moved = false; }
-            else if ((prev_mv.MOVE_BIT_REP & (1 << 6)) != 0) {  is_h8_rook_moved = false; }
-            else if ((prev_mv.MOVE_BIT_REP & (1 << 5)) != 0) {  is_wking_moved = false; }
-            else if ((prev_mv.MOVE_BIT_REP & (1 << 4)) != 0) {  is_bking_moved = false; } 
+                if ((prev_mv.MOVE_BIT_REP & (1 << 5)) != 0) {  is_a1_rook_moved = false; }
+            else if ((prev_mv.MOVE_BIT_REP & (1 << 4)) != 0) {  is_h1_rook_moved = false; }
+            else if ((prev_mv.MOVE_BIT_REP & (1 << 3)) != 0) {  is_a8_rook_moved = false; }
+            else if ((prev_mv.MOVE_BIT_REP & (1 << 2)) != 0) {  is_h8_rook_moved = false; }
+            else if ((prev_mv.MOVE_BIT_REP & (1 << 1)) != 0) {  is_wking_moved = false; }
+            else if ((prev_mv.MOVE_BIT_REP & (1 << 0)) != 0) {  is_bking_moved = false; } 
         }
 
         if (prev_mv.start_square.piece_type != 6) return;
@@ -720,31 +707,22 @@ public class Board{
         wking_pos = prev_mv.wking_pos;
         bking_pos = prev_mv.bking_pos;
 
-        if ((prev_mv.MOVE_BIT_REP & 0b1000) != 0) {
-            // ROOK a1d1
+        if (prev_mv.is_castle_white_long) {
             b[0, 0] = b[0, 3];
             b[0, 3] = 0;
         }
-
-        else if ((prev_mv.MOVE_BIT_REP & 0b0100) != 0) {
-            // ROOK h1f1
+        else if (prev_mv.is_castle_white_short) {
             b[0, 7] = b[0, 5];
             b[0, 5] = 0;
         }
-
-
-        else if ((prev_mv.MOVE_BIT_REP & 0b0010) != 0) {
-            // ROOK a8d8
+        else if (prev_mv.is_castle_black_long) {
             b[7, 0] = b[7, 3];
             b[7, 3] = 0;
         }
-        
-        else if ((prev_mv.MOVE_BIT_REP & 0b0001) != 0) {
-            // ROOK h8f8
+        else if (prev_mv.is_castle_black_short) {
             b[7, 7] = b[7, 5];
             b[7, 5] = 0;  
         }
-
     }
 
 
@@ -761,9 +739,11 @@ public class Board{
 
     public bool isEqualToBoard(int[,] other_board)
     {
-        for (int i = 0; i < b.GetLength(0); i++)
+        UnityEngine.Debug.Log(other_board[1,1]);
+
+        for (int i = 0; i<8; i++)
         {
-            for (int j = 0; j < b.GetLength(1); j++)
+            for (int j = 0; j<8; j++)
             {
                 if (b[i, j] != other_board[i, j])
                 {

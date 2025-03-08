@@ -84,7 +84,7 @@ public class CONTROLLER_Piece : MonoBehaviour
 
 
     public int DroppedPiece(Move piece_move) {
-        List<Move> piece_legal_moves = bm.move_generator.GenerateLegalMoves(bm.board, filter_square:piece_move.start_square);
+        List<Move> piece_legal_moves = bm.move_generator.GenerateLegalMovesForSquare(bm.board, piece_move.start_square);
 
         foreach(Move move in piece_legal_moves) {
             if (move.str_uci() == piece_move.str_uci()) {

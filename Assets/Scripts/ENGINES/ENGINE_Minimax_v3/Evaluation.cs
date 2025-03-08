@@ -10,23 +10,6 @@ public class Eval {
 
     private float value_multiplier = 0.2f;
 
-    Dictionary<int, int> pieceValues = new Dictionary<int, int>
-    {
-        { 0, 0 },
-        { 1, 1 },
-        { 2, 5 },
-        { 3, 3 },
-        { 4, 3 },
-        { 5, 9 },
-        { 6, 0 },
-        { 8, 1 },
-        { 9, 5 },
-        { 10, 3 },
-        { 11, 3 },
-        { 12, 9 },
-        { 13, 0 }
-    };
-
     public double EvaluateBoard(Board board) {
         double eval_bias;
 
@@ -46,31 +29,15 @@ public class Eval {
             eval_bias = 0;
         }
 
-        eval_bias += (rn.NextDouble() * 0.02f) - 0.02f;
+        eval_bias += (rn.NextDouble() * 0.1f) - 0.1f;
         return Math.Round(eval_bias, 2);
     }
 
     public double PieceSum(Board board) {
         double eval_bias = 0;
 
-        // int raw_wp_sum = 0;
-        // int raw_bp_sum = 0;
-        // 
-        // int piece = 0;
-        // for(int row=0; row<8; row++) {
-        //     for (int col=0; col<8; col++) {
-        //         piece = board.b[row, col];
-        //         if (piece < 7 && piece != 0) raw_wp_sum += pieceValues[piece];
-        //         if (piece > 7) raw_bp_sum += pieceValues[piece];
-        //     }
-        // }
-
-        // float wp_perc = Math.Min((float)raw_wp_sum / 39 * 4, 1);
-        // float bp_perc = Math.Min((float)raw_bp_sum / 39 * 4, 1);
-
         for (int row=0; row<8; row++) {
             for (int col=0; col<8; col++) {
-                //eval_bias += GetSqVal(board, row, col, wp_perc, bp_perc);
                 eval_bias += GetSqVal(board.b, row, col, 1, 1);
             }
         }

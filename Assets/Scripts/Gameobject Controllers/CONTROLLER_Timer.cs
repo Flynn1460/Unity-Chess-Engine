@@ -91,6 +91,10 @@ public class CONTROLLER_Timer : MonoBehaviour
         black_timer.text = int_to_str_time(B_TIME);
     }
 
+    public void ResetBM(BoardManager bm) {
+        board_manager = bm;
+    }
+
     IEnumerator UpdateClock() {
         while (true) {
             if (board_manager.board.turn) {

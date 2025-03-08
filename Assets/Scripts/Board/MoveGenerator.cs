@@ -167,34 +167,16 @@ public class MoveGenerator
         // Black Knight & White King
         if ((wp.Contains(6) && wp.Count == 1) && (bp.Contains(13) && bp.Contains(10) && bp.Count == 2)) return true;
 
-        int reached_times = 1;
-        int x = 0;
-        foreach(Move prev_mv in board.move_list) {
-            x++;
-            if (board.isEqualToBoard(prev_mv.board_before_move)) {
-                // UnityEngine.Debug.Log(board.move_list.Count + " : " + x);
-                reached_times++;
+        HASH current_hash = board.hashGen.MAKE_HASH(board);
+        int repeated = 1;
+
+        foreach(Move mv in board.move_list) {
+            if (board.hashGen.COMPARE_HASH(current_hash, mv.board_before_HASH)) {
+                repeated++;
             }
 
-            if (reached_times == 3) {
-                // UnityEngine.Debug.Log("rep");
-                return true;
-            }
+            if (repeated >= 3) return true;
         }
-
-
-        if (board.move_list.Count > 50) {
-            Move old_mv = board.move_list[board_.move_list.Count - 51];
-            Move new_mv = board.move_list[board_.move_list.Count -  1];
-
-            List<int> oldSq = GetPieceTypes(old_mv.board_before_move, board.turn, PieceGroup.BOTH);
-            List<int> newSq = GetPieceTypes( new_mv.board_before_move, board.turn, PieceGroup.BOTH);
-
-            if (oldSq.SequenceEqual(newSq)) {
-                // UnityEngine.Debug.Log("sq");
-                return true;
-            }
-        }   
 
         List<Move> moves = new List<Move>();
         List<Square> piece_squares_for_turn = GetSquareType(board, PieceGroup.FRIENDLY);

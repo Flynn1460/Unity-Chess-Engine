@@ -131,6 +131,10 @@ public class MinimaxEngine {
         double highest_eval = board.turn ? -1000 : +1000;
         double eval;
 
+        if (stopwatch.ElapsedMilliseconds > allocated_movetime) {
+            return -1001;
+        }
+
         foreach(Move move in moves) {
             board.move(move);
 
@@ -156,10 +160,6 @@ public class MinimaxEngine {
                 
                 if (beta <= alpha) break;
             }
-        }
-
-        if (stopwatch.ElapsedMilliseconds > allocated_movetime) {
-            return -1001;
         }
         
         trs.MAKE_HASH(board, highest_eval);

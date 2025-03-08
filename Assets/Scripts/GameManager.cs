@@ -164,7 +164,7 @@ public class GameMatcher
     private CustomEngineInterface ENGINE_OBJ_Minimax_1 = new CustomEngineInterface("Minimax 1.0", typeof(ENGINE_Minimax_V1));
     private CustomEngineInterface ENGINE_OBJ_Minimax_2 = new CustomEngineInterface("Minimax 2.2", typeof(ENGINE_Minimax_V2));
     private CustomEngineInterface ENGINE_OBJ_Minimax_3 = new CustomEngineInterface("Minimax 3.3", typeof(ENGINE_Minimax_V3));
-    private CustomEngineInterface ENGINE_OBJ_Minimax_4 = new CustomEngineInterface("Minimax 4.b", typeof(ENGINE_Minimax_V4));
+    private CustomEngineInterface ENGINE_OBJ_Minimax_4 = new CustomEngineInterface("Minimax 4.0", typeof(ENGINE_Minimax_V4));
 
 
     public GameMatcher(BoardManager board_manager, int engine_movetime) {
@@ -187,7 +187,7 @@ public class GameMatcher
     public async void GetEngineMove() {
         Move engine_move = await GetEngineMoveAsync();
 
-        bm.board.advanced_move( engine_move ); 
+        bm.STACKED_MOVE = engine_move.copy();
     }    
 
     public async Task<Move> GetEngineMoveAsync()
