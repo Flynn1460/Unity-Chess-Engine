@@ -173,7 +173,7 @@ public class MinimaxEngine {
         List<(Move mv, float diff)> ordered_moves = new List<(Move mv, float diff)>();
 
         foreach(Move move in moves) {
-            ordered_moves.Add((move, move.end_square.piece_type-(move.start_square.piece_type/3)));
+            ordered_moves.Add((move, move.end_square.GetPieceType()-(move.start_square.GetPieceType()/3)));
         }
 
         if  (turn)  ordered_moves = ordered_moves.OrderBy(x => x.diff).ToList();

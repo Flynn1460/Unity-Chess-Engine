@@ -41,7 +41,13 @@ public class HashGen {
             for (int row = 0; row < 2; row++) {
                 for (int col = 0; col < 8; col++) {
                     // Shift left by 4 and add mapped value
-                    hashValue = (hashValue << 4) | pieceMap[board.b[row + rowOffset, col]];
+                    try {hashValue = (hashValue << 4) | pieceMap[board.b[row + rowOffset, col]];}
+                    catch {
+                        UnityEngine.Debug.Log(row+rowOffset + ", " + col);
+                        board.PrintBoard(null);
+                        UnityEngine.Debug.Log(board.b[1, 0]); 
+                        UnityEngine.Debug.Log(pieceMap[board.b[1, 0]]);
+                    }
                 }
             }
 

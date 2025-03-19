@@ -23,7 +23,7 @@ public class NewMoveGenerator
         if (board.move_list.Count != 0) lastMove = board.move_list[board.move_list.Count - 1];
 
         foreach(Square piece_square in piece_squares_for_turn) {
-            switch(piece_square.piece_type) {
+            switch(piece_square.GetPieceType()) {
                 case 1: GetPawnMoves(board, piece_square, legal_moves, safe_search); break;
                 case 2: GetRookMoves(board, piece_square, legal_moves); break;
                 case 3: GetKnightMoves(board, piece_square, legal_moves); break;
@@ -46,7 +46,7 @@ public class NewMoveGenerator
         foreach(Square piece_square in piece_squares_for_turn) {
             // Check if you are only searching for a singular piece
 
-            switch(piece_square.piece_type) {
+            switch(piece_square.GetPieceType()) {
                 case 1: GetPawnMoves(board, piece_square, legal_moves, true); break;
                 case 2: GetRookMoves(board, piece_square, legal_moves); break;
                 case 3: GetKnightMoves(board, piece_square, legal_moves); break;
@@ -67,7 +67,7 @@ public class NewMoveGenerator
 
         if (board.move_list.Count != 0) lastMove = board.move_list[board.move_list.Count - 1];
 
-        switch(filter_square.piece_type) {
+        switch(filter_square.GetPieceType()) {
             case 1: GetPawnMoves(board, filter_square, legal_moves, false); break;
             case 2: GetRookMoves(board, filter_square, legal_moves); break;
             case 3: GetKnightMoves(board, filter_square, legal_moves); break;
@@ -82,65 +82,48 @@ public class NewMoveGenerator
 
 
     public bool isSquareAttacked(Board board, Square attacked_square, bool check_search=false) {
-        String attacked_square_str = attacked_square.str_uci();
-        List<Move> moves_for_square = new List<Move>();
+        int attacked_square_raw = attacked_square.GetRAW();
+        List<Move> moves_for_square = new List<Move>(8);
 
-        if (!check_search) {
-            List<Square> dia_liab = GetDiagonalLiabilities(board, attacked_square);  
-            foreach(Square piece_square in dia_liab) {
-                if (piece_square.piece_type == 4 || piece_square.piece_type == 5 ) return true;
-            }
+        if (check_search) return false;
 
-            List<Square> str_liab = GetStraightLiabilities(board, attacked_square);  
-            foreach(Square piece_square in str_liab) {
-                if (piece_square.piece_type == 2 || piece_square.piece_type == 5 ) return true;
-            }
+        List<Square> dia_liab = GetDiagonalLiabilities(board, attacked_square);  
+        foreach(Square piece_square in dia_liab) {
+            switch(piece_square.GetPieceType()) {
+                case 4: return true;
+                case 5: return true;
 
-            List<Square> kni_liab = GetKnightLiabilities(board, attacked_square);  
-            foreach(Square piece_square in kni_liab) {
-                if (piece_square.piece_type == 3) return true;
-            }
+                case 1: 
+                    moves_for_square.Clear();
+                    GetPawnMoves(board, piece_square, moves_for_square, include_theory:true); 
+                    foreach(Move pos_move in moves_for_square) { if (pos_move.end_square.GetRAW() == attacked_square_raw) return true; }
+                    break;
 
-            // bool pass = true;
+                case 6: 
+                    moves_for_square.Clear();
+                    GetKingMoves(board, piece_square, moves_for_square, safe_search:true);
+                    foreach(Move pos_move in moves_for_square) { if (pos_move.end_square.GetRAW() == attacked_square_raw) return true; } 
+                    break;
+            }   
+        }
 
-            //      if (IsInBounds(attacked_square.row+1, attacked_square.col+1)) {if (IsFriendlyPieceInc(board.b[attacked_square.row+1, attacked_square.col+1], !board.turn)) {pass = false;}}
-            // else if (IsInBounds(attacked_square.row+1, attacked_square.col+0)) {if (IsFriendlyPieceInc(board.b[attacked_square.row+1, attacked_square.col+0], !board.turn)) {pass = false;}} 
-            // else if (IsInBounds(attacked_square.row+1, attacked_square.col-1)) {if (IsFriendlyPieceInc(board.b[attacked_square.row+1, attacked_square.col-1], !board.turn)) {pass = false;}} 
-            // else if (IsInBounds(attacked_square.row+0, attacked_square.col+1)) {if (IsFriendlyPieceInc(board.b[attacked_square.row+0, attacked_square.col+1], !board.turn)) {pass = false;}} 
-            // else if (IsInBounds(attacked_square.row+0, attacked_square.col-1)) {if (IsFriendlyPieceInc(board.b[attacked_square.row+0, attacked_square.col-1], !board.turn)) {pass = false;}} 
-            // else if (IsInBounds(attacked_square.row-1, attacked_square.col+1)) {if (IsFriendlyPieceInc(board.b[attacked_square.row-1, attacked_square.col+1], !board.turn)) {pass = false;}} 
-            // else if (IsInBounds(attacked_square.row-1, attacked_square.col+0)) {if (IsFriendlyPieceInc(board.b[attacked_square.row-1, attacked_square.col+0], !board.turn)) {pass = false;}} 
-            // else if (IsInBounds(attacked_square.row-1, attacked_square.col-1)) {if (IsFriendlyPieceInc(board.b[attacked_square.row-1, attacked_square.col-1], !board.turn)) {pass = false;}}
+        List<Square> str_liab = GetStraightLiabilities(board, attacked_square);  
+        foreach(Square piece_square in str_liab) {
+            if (piece_square.GetPieceType() == 2 || piece_square.GetPieceType() == 5 ) return true;
+            if (piece_square.GetPieceType() != 6) continue;
 
-            // if (pass) {  return true;  }
-            
+            moves_for_square.Clear();
+            GetKingMoves(board, piece_square, moves_for_square, safe_search:true); 
+            foreach(Move pos_move in moves_for_square) { if (pos_move.end_square.GetRAW() == attacked_square_raw) return true; }
+        }
 
-            foreach(Square piece_square in dia_liab) {
-                switch(piece_square.piece_type) {
-                    case 1: GetPawnMoves(board, piece_square, moves_for_square, include_theory:true); break;
-                    case 6: GetKingMoves(board, piece_square, moves_for_square, safe_search:true); break;
-                }
-
-                foreach(Move pos_move in moves_for_square) {
-                    if (pos_move.end_square.str_uci() == attacked_square_str) return true;
-                } 
-            }
-
-
-            foreach(Square piece_square in str_liab) {
-                if (piece_square.piece_type == 6) {
-                    GetKingMoves(board, piece_square, moves_for_square, safe_search:true); 
-
-                    foreach(Move pos_move in moves_for_square) {
-                        if (pos_move.end_square.str_uci() == attacked_square_str) return true;
-                    } 
-                }
-            }
+        List<Square> kni_liab = GetKnightLiabilities(board, attacked_square);  
+        foreach(Square piece_square in kni_liab) {
+            if (piece_square.GetPieceType() == 3) return true;
         }
 
         return false;
     }
-
 
     // PLY TESTING
     public List<double> GenerateLegalPly(Board board, int ply, bool move_breakdown=false) {
@@ -246,7 +229,7 @@ public class NewMoveGenerator
         List<Square> piece_squares_for_turn = GetSquareType(board, PieceGroup.FRIENDLY);
         foreach(Square piece_square in piece_squares_for_turn) {
 
-            switch(piece_square.piece_type) {
+            switch(piece_square.GetPieceType()) {
                 case 1: GetPawnMoves(board, piece_square, moves, false); break;
                 case 2: GetRookMoves(board, piece_square, moves); break;
                 case 3: GetKnightMoves(board, piece_square, moves); break;
@@ -290,11 +273,11 @@ public class NewMoveGenerator
         return filtered_moves;
     }
 
-    private List<Move> DiscardNonCaptures(List<Move> legal_moves) {
+    private static List<Move> DiscardNonCaptures(List<Move> legal_moves) {
         List<Move> filtered_moves = new List<Move>();
 
         foreach(Move move in legal_moves) {
-            if (move.end_square.piece != 0) filtered_moves.Add(move);
+            if (move.end_square.GetPiece() != 0) filtered_moves.Add(move);
         }
 
         return filtered_moves;
@@ -306,10 +289,10 @@ public class NewMoveGenerator
 
         foreach (var (dRow, dCol) in rook_directions)
         {
-            int newRow = piece_square.row + dRow;
-            int newCol = piece_square.col + dCol;
+            int newRow = piece_square.GetRow() + dRow;
+            int newCol = piece_square.GetCol() + dCol;
 
-            while (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board.b[newRow, newCol], piece_square.isWhite))
+            while (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board.b[newRow, newCol], piece_square.GetIsWhite()))
             {
                 if (board.b[newRow, newCol] != 0) {  // Stop at capture
                     legal_moves.Add(  new Square(board.b, newCol, newRow)  );
@@ -329,10 +312,10 @@ public class NewMoveGenerator
 
         foreach (var (dRow, dCol) in bishop_directions)
         {
-            int newRow = piece_square.row + dRow;
-            int newCol = piece_square.col + dCol;
+            int newRow = piece_square.GetRow() + dRow;
+            int newCol = piece_square.GetCol() + dCol;
 
-            while (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board.b[newRow, newCol], piece_square.isWhite))
+            while (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board.b[newRow, newCol], piece_square.GetIsWhite()))
             {
                 if (board.b[newRow, newCol] != 0) {  // Stop at capture
                     legal_moves.Add(  new Square(board.b, newCol, newRow)  );
@@ -351,10 +334,10 @@ public class NewMoveGenerator
         List<Square> legal_moves = new List<Square>();
 
         foreach (var (dRow, dCol) in knight_directions) {
-            int newRow = piece_square.row + dRow;
-            int newCol = piece_square.col + dCol;
+            int newRow = piece_square.GetRow() + dRow;
+            int newCol = piece_square.GetCol() + dCol;
 
-            if (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board.b[newRow, newCol], piece_square.isWhite))
+            if (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board.b[newRow, newCol], piece_square.GetIsWhite()))
             {
                 legal_moves.Add(  new Square(board.b, newCol, newRow)  );
             }
@@ -364,7 +347,7 @@ public class NewMoveGenerator
     }
     
 
-    private List<Square> GetSquareType(Board board, PieceGroup p_type) {
+    private static List<Square> GetSquareType(Board board, PieceGroup p_type) {
         List<Square> type_squares = new List<Square>();
 
         bool white_focus = (p_type == PieceGroup.FRIENDLY &&  board.turn) || (p_type == PieceGroup.ENEMY && !board.turn) || (p_type == PieceGroup.BOTH)|| (p_type == PieceGroup.WHITE);
@@ -385,16 +368,16 @@ public class NewMoveGenerator
 
     // Hard Work Moves
     private void GetPawnMoves(Board board, Square piece_square, List<Move> legal_move_list, bool include_theory=false) {
-        int direction = piece_square.isWhite ? 1 : -1; // White moves up (+1), Black moves down (-1)
+        int direction = piece_square.GetIsWhite() ? 1 : -1; // White moves up (+1), Black moves down (-1)
 
-        Square forward_sq = new Square(board.b, piece_square.col, piece_square.row + direction);
+        Square forward_sq = new Square(board.b, piece_square.GetCol(), piece_square.GetRow() + direction);
         Move forward_move = new Move(piece_square, forward_sq);
 
 
-        if (IsInBounds(forward_move) && forward_move.end_square.piece == 0) {
+        if (forward_move.is_in_bounds && forward_move.end_square.GetPiece() == 0) {
 
             // Add forward move and set it as promotion square if needed
-            if (forward_move.end_square.row%7 == 0) {
+            if (forward_move.end_square.GetRow()%7 == 0) {
                 forward_move = new Move(piece_square, forward_sq);
                 forward_move.promote = board.turn ? 2 : 9; // Promote to Rook
                 legal_move_list.Add(forward_move);
@@ -417,33 +400,33 @@ public class NewMoveGenerator
 
 
             // DOUBLE MOVE
-            Square double_forward_sq = new Square(board.b, piece_square.col, piece_square.row + (2*direction));
+            Square double_forward_sq = new Square(board.b, piece_square.GetCol(), piece_square.GetRow() + (2*direction));
             Move double_forward_move = new Move(piece_square, double_forward_sq);
 
-            bool is_on_starting_square = double_forward_move.start_square.row == double_forward_move.start_square.start_row;
+            bool is_on_starting_square = double_forward_move.start_square.GetRow() == double_forward_move.start_square.GetStartRow();
 
-            if (is_on_starting_square && double_forward_move.end_square.piece == 0) {
+            if (is_on_starting_square && double_forward_move.end_square.GetPiece() == 0) {
                 legal_move_list.Add(double_forward_move);
             }
         }
 
         
         // DIAGONAL MOVES
-        Square l_diagonal_sq = new Square(board.b, piece_square.col-1, piece_square.row+direction);
-        Square r_diagonal_sq = new Square(board.b, piece_square.col+1, piece_square.row+direction);
+        Square l_diagonal_sq = new Square(board.b, piece_square.GetCol()-1, piece_square.GetRow()+direction);
+        Square r_diagonal_sq = new Square(board.b, piece_square.GetCol()+1, piece_square.GetRow()+direction);
         
         Move l_diagonal_move = new Move(piece_square, l_diagonal_sq);
         Move r_diagonal_move = new Move(piece_square, r_diagonal_sq);
         Move diagonal_promotion_move;
 
         foreach(Move diagonal_move in new Move[] {l_diagonal_move, r_diagonal_move}) {
-            if (IsInBounds(diagonal_move)) {
+            if (diagonal_move.is_in_bounds) {
                 
-                int captured_piece = diagonal_move.end_square.piece;
-                if ((captured_piece != 0 && !IsFriendlyPiece(captured_piece, piece_square.isWhite)) || include_theory) {
+                int captured_piece = diagonal_move.end_square.GetPiece();
+                if ((captured_piece != 0 && !IsFriendlyPiece(captured_piece, piece_square.GetIsWhite())) || include_theory) {
 
                     // Add end square and promotion if needed
-                    if (diagonal_move.end_square.row%7 != 0) {
+                    if (diagonal_move.end_square.GetRow()%7 != 0) {
                         legal_move_list.Add(diagonal_move);
                         continue;
                     }
@@ -476,15 +459,15 @@ public class NewMoveGenerator
         if (board.move_list.Count == 0) return;
 
         // Last move
-        if (lastMove.start_square.piece_type == 1)
+        if (lastMove.start_square.GetPieceType() == 1)
         {
             // Check if the last move was a two-step pawn move
-            bool is_double_move = Math.Abs(lastMove.start_square.row - lastMove.end_square.row) == 2;
-            if (is_double_move && piece_square.row == lastMove.end_square.row && (piece_square.col == lastMove.end_square.col+1 || piece_square.col == lastMove.end_square.col-1))
+            bool is_double_move = Math.Abs(lastMove.start_square.GetRow() - lastMove.end_square.GetRow()) == 2;
+            if (is_double_move && piece_square.GetRow() == lastMove.end_square.GetRow() && (piece_square.GetCol() == lastMove.end_square.GetCol()+1 || piece_square.GetCol() == lastMove.end_square.GetCol()-1))
             {
-                int pawn_fwd_dir = piece_square.isWhite ? 1 : -1;
+                int pawn_fwd_dir = piece_square.GetIsWhite() ? 1 : -1;
 
-                Move en_passant_move = new Move(board, piece_square, lastMove.end_square.col, lastMove.end_square.row + pawn_fwd_dir);
+                Move en_passant_move = new Move(board, piece_square, lastMove.end_square.GetCol(), lastMove.end_square.GetRow() + pawn_fwd_dir);
                 en_passant_move.isEnpassant = true;
                 legal_move_list.Add(en_passant_move);
             }
@@ -553,14 +536,14 @@ public class NewMoveGenerator
     private void GetBishopMoves(Board board, Square piece_square, List<Move> legal_move_list) {  AddSlidingMoves(board, piece_square, legal_move_list, bishop_directions);  } 
     private void GetQueenMoves(Board board, Square piece_square, List<Move> legal_move_list) {  AddSlidingMoves(board, piece_square, legal_move_list, queen_directions);  } 
 
-    private void AddSlidingMoves(Board board, Square piece_square, List<Move> legal_move_list, (int, int)[] directions)
+    private static void AddSlidingMoves(Board board, Square piece_square, List<Move> legal_move_list, (int, int)[] directions)
     {
         foreach (var (dRow, dCol) in directions)
         {
-            int newRow = piece_square.row + dRow;
-            int newCol = piece_square.col + dCol;
+            int newRow = piece_square.GetRow() + dRow;
+            int newCol = piece_square.GetCol() + dCol;
 
-            while (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board.b[newRow, newCol], piece_square.isWhite))
+            while (IsInBounds(newRow, newCol) && !IsFriendlyPiece(board.b[newRow, newCol], piece_square.GetIsWhite()))
             {
                 Move mv = new Move(board, piece_square, newCol, newRow);
                 legal_move_list.Add(mv);
@@ -572,14 +555,14 @@ public class NewMoveGenerator
         }
     }
 
-    private void AddConcreteMoves(Board board, Square piece_square, List<Move> legal_move_list, (int, int)[] places) {
+    private static void AddConcreteMoves(Board board, Square piece_square, List<Move> legal_move_list, (int, int)[] places) {
         foreach (var (dRow, dCol) in places) {
-            int newRow = piece_square.row + dRow;
-            int newCol = piece_square.col + dCol;
+            int newRow = piece_square.GetRow() + dRow;
+            int newCol = piece_square.GetCol() + dCol;
 
             Move knight_move = new Move(board, piece_square, newCol, newRow);
 
-            if (IsInBounds(knight_move) && !IsFriendlyPiece(knight_move.end_square.piece, piece_square.isWhite))
+            if (knight_move.is_in_bounds && !IsFriendlyPiece(knight_move.end_square.GetPiece(), piece_square.GetIsWhite()))
             {
                 legal_move_list.Add(knight_move);
             }
@@ -588,8 +571,6 @@ public class NewMoveGenerator
     
 
     // Helper Functions
-    private bool IsFriendlyPiece(int piece, bool isWhite) { return isWhite ? (piece > 0 && piece < 7) : (piece >= 7);}
-    private bool IsFriendlyPieceInc(int piece, bool isWhite) { return isWhite ? (piece >= 0 && piece < 7) : (piece >= 7 || piece == 0);}
-    private bool IsInBounds(Move sq) => sq.end_square.row >= 0 && sq.end_square.row < 8 && sq.end_square.col >= 0 && sq.end_square.col < 8;
-    private bool IsInBounds(int row, int col) => row >= 0 && row < 8 && col >= 0 && col < 8;
+    private static bool IsFriendlyPiece(int piece, bool isWhite) { return isWhite ? (piece > 0 && piece < 7) : (piece >= 7);}
+    private static bool IsInBounds(int row, int col) => row >= 0 && row < 8 && col >= 0 && col < 8;
 }
